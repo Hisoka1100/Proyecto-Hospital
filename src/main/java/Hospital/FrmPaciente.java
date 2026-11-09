@@ -72,6 +72,7 @@ public class FrmPaciente extends javax.swing.JFrame {
         btnRegistrar.addActionListener(this::btnRegistrarActionPerformed);
 
         btnBuscar.setText("Buscar");
+        btnBuscar.addActionListener(this::btnBuscarActionPerformed);
 
         btnEditar.setText("Editar");
 
@@ -322,70 +323,71 @@ public class FrmPaciente extends javax.swing.JFrame {
         txtId.requestFocus();
         
     }//GEN-LAST:event_btnLimpiarActionPerformed
-private boolean validarRut(String rut) {
 
-    // Exigir 7 u 8 dígitos, guion y dígito verificador
-    if (rut == null || !rut.matches("[0-9]{7,8}-[0-9Kk]")) {
-        return false;
-    }
+    private void btnBuscarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnBuscarActionPerformed
+        // TODO add your handling code here:
+    }//GEN-LAST:event_btnBuscarActionPerformed
+                                                   
+        // Obtener el ID ingresado
+        String id = txtId.getText().trim();
 
-    String[] partes = rut.toUpperCase().split("-");
-    String cuerpo = partes[0];
-    char digitoIngresado = partes[1].charAt(0);
-
-    int suma = 0;
-    int multiplicador = 2;
-
-    for (int i = cuerpo.length() - 1; i >= 0; i--) {
-        int digito = cuerpo.charAt(i) - '0';
-        suma += digito * multiplicador;
-
-        multiplicador++;
-        if (multiplicador > 7) {
-            multiplicador = 2;
+        if (id.isEmpty()) {
+            JOptionPane.showMessageDialog(
+                    this,
+                    "Ingresa el ID del paciente que deseas buscar."
+            );
+            return;
         }
-    }
 
-    int resultado = 11 - (suma % 11);
-
-    char digitoEsperado;
-    if (resultado == 11) {
-        digitoEsperado = '0';
-    } else if (resultado == 10) {
-        digitoEsperado = 'K';
-    } else {
-        digitoEsperado = (char) ('0' + resultado);
-    }
-
-    return digitoIngresado == digitoEsperado;
-}
-
-   
-    /**
-     * @param args the command line arguments
-     */
-    public static void main(String args[]) {
-        /* Set the Nimbus look and feel */
-        //<editor-fold defaultstate="collapsed" desc=" Look and feel setting code (optional) ">
-        /* If Nimbus (introduced in Java SE 6) is not available, stay with the default look and feel.
-         * For details see http://download.oracle.com/javase/tutorial/uiswing/lookandfeel/plaf.html 
-         */
         try {
-            for (javax.swing.UIManager.LookAndFeelInfo info : javax.swing.UIManager.getInstalledLookAndFeels()) {
-                if ("Nimbus".equals(info.getName())) {
-                    javax.swing.UIManager.setLookAndFeel(info.getClassName());
-                    break;
-                }
+            int numeroId = Integer.parseInt(id);
+
+            if (numeroId <= 0) {
+                JOptionPane.showMessageDialog(
+                        this,
+                        "El ID debe ser un número positivo."
+                );
+                return;
             }
-        } catch (ReflectiveOperationException | javax.swing.UnsupportedLookAndFeelException ex) {
-            logger.log(java.util.logging.Level.SEVERE, null, ex);
+
+            // Ojo aquí: revisa si tu clase se llama PacienteDAO (con O) o PacienteDA0 (con cero). 
+            // Lo normal es DAO (Data Access Object).
+            PacienteDA0 dao = new PacienteDA0(); 
+
+            String[] paciente = dao.buscar(numeroId);
+
+            if (paciente != null) {
+                txtId.setText(paciente[0]);
+                txtRut.setText(paciente[1]);
+                txtNombre.setText(paciente[2]);
+                txtFecha.setText(paciente[3]);
+                txtContacto.setText(paciente[4]);
+
+                JOptionPane.showMessageDialog(
+                        this,
+                        "Paciente encontrado correctamente."
+                );
+
+            } else {
+                JOptionPane.showMessageDialog(
+                        this,
+                        "No se encontró ningún paciente con ese ID."
+                );
+            }
+
+        } catch (NumberFormatException e) {
+            JOptionPane.showMessageDialog(
+                    this,
+                    "El ID debe contener solamente números."
+            );
+
+        } catch (java.sql.SQLException e) {
+            JOptionPane.showMessageDialog(
+                    this,
+                    "Error al buscar el paciente: " + e.getMessage()
+            );
         }
-        //</editor-fold>
-
-        /* Create and display the form */
-     java.awt.EventQueue.invokeLater(() -> new FrmPaciente().setVisible(true));
-    }
-
+    } // <--- LA LLAVE DE CIERRE DEBE IR AQUÍ, AL FINAL DE LA LÓGICA
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JLabel ID;
     private javax.swing.JLabel TxtContacto;

@@ -1,0 +1,13 @@
+# Archivos compilados de Maven
+target/
+
+# Configuraciones locales de NetBeans
+nbproject/private/
+build/
+nbbuild/
+dist/
+nbdist/
+
+# Archivos ocultos de sistema operativo (Mac/Windows)
+.DS_Store
+Thumbs.db
