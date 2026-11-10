@@ -3,20 +3,51 @@
  * Click nbfs://nbhost/SystemFileSystem/Templates/GUIForms/JFrame.java to edit this template
  */
 package Hospital;
+import java.sql.SQLException;
+import java.sql.SQLIntegrityConstraintViolationException;
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeParseException;
+import java.time.format.ResolverStyle;
+import java.util.ArrayList;
+import java.util.List;
+import javax.swing.JOptionPane;
 
 /**
  *
  * @author felipebaeza
  */
 public class FrmCasoClinico extends javax.swing.JFrame {
-    
-    private static final java.util.logging.Logger logger = java.util.logging.Logger.getLogger(FrmCasoClinico.class.getName());
 
-    /**
-     * Creates new form FrmCasoClinico
-     */
+    private static final java.util.logging.Logger logger = java.util.logging.Logger.getLogger(FrmCasoClinico.class.getName());
+    private final CasoClinicoDA0 dao = new CasoClinicoDA0();
+
+    // Mismo formato de fecha que usan los demás formularios
+    private final DateTimeFormatter formato =
+            DateTimeFormatter.ofPattern("dd/MM/uuuu")
+                    .withResolverStyle(ResolverStyle.STRICT);
+
+    // Pacientes del combo: cada elemento es {id, nombre}
+    private List<String[]> pacientes = new ArrayList<>();
+
     public FrmCasoClinico() {
         initComponents();
+        cargarPacientes();
+    }
+
+    // Llena el combo de pacientes desde la base de datos
+    private void cargarPacientes() {
+        try {
+            pacientes = dao.listarPacientes();
+            cmbPaciente.removeAllItems();
+            for (String[] p : pacientes) {
+                cmbPaciente.addItem(p[0] + " - " + p[1]);
+            }
+        } catch (SQLException e) {
+            JOptionPane.showMessageDialog(this,
+                    "No se pudieron cargar los pacientes: " + e.getMessage(),
+                    "Error", JOptionPane.ERROR_MESSAGE);
+        }
     }
 
     /**
@@ -68,12 +99,16 @@ public class FrmCasoClinico extends javax.swing.JFrame {
         btnRegistrar.addActionListener(this::btnRegistrarActionPerformed);
 
         btnBuscar.setText("Buscar");
+        btnBuscar.addActionListener(this::btnBuscarActionPerformed);
 
         btnEditar.setText("Editar");
+        btnEditar.addActionListener(this::btnEditarActionPerformed);
 
         btnCerrarCaso.setText("Cerrar caso");
+        btnCerrarCaso.addActionListener(this::btnCerrarCasoActionPerformed);
 
         btnLimpiar.setText("Limpiar");
+        btnLimpiar.addActionListener(this::btnLimpiarActionPerformed);
 
         cmbEstado.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { ".", "Abierto", "Cerrado" }));
         cmbEstado.addActionListener(this::cmbEstadoActionPerformed);
@@ -135,8 +170,8 @@ public class FrmCasoClinico extends javax.swing.JFrame {
             .addGroup(layout.createSequentialGroup()
                 .addComponent(jLabel1, javax.swing.GroupLayout.PREFERRED_SIZE, 70, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addGap(31, 31, 31)
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(jLabel2)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(jLabel2, javax.swing.GroupLayout.Alignment.TRAILING)
                     .addComponent(jLabel3))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
@@ -173,7 +208,80 @@ public class FrmCasoClinico extends javax.swing.JFrame {
     }// </editor-fold>//GEN-END:initComponents
 
     private void btnRegistrarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnRegistrarActionPerformed
-        // TODO add your handling code here:
+        String textoId = txtIdCaso.getText().trim();
+        String textoFecha = txtFechaApertura.getText().trim();
+
+        // Campos obligatorios
+        if (textoId.isEmpty() || textoFecha.isEmpty()) {
+            JOptionPane.showMessageDialog(this,
+                    "Debe completar el ID del caso y la fecha de apertura.");
+            return;
+        }
+
+        // El ID debe ser un número entero positivo
+        int id;
+        try {
+            id = Integer.parseInt(textoId);
+            if (id <= 0) {
+                throw new NumberFormatException();
+            }
+        } catch (NumberFormatException e) {
+            JOptionPane.showMessageDialog(this,
+                    "El ID del caso debe ser un número entero positivo.");
+            return;
+        }
+
+        // Debe haber un paciente seleccionado
+        int indice = cmbPaciente.getSelectedIndex();
+        if (indice < 0) {
+            JOptionPane.showMessageDialog(this, "Debe seleccionar un paciente.");
+            return;
+        }
+
+        // Debe haber un estado seleccionado
+        String estado = (String) cmbEstado.getSelectedItem();
+        if (estado == null || estado.equals(".")) {
+            JOptionPane.showMessageDialog(this, "Debe seleccionar el estado del caso.");
+            return;
+        }
+
+        // Un caso nuevo siempre se registra como Abierto
+        if (estado.equals("Cerrado")) {
+            JOptionPane.showMessageDialog(this,
+                    "Un caso nuevo se registra como Abierto. "
+                    + "Para cerrarlo use el botón Cerrar caso.");
+            return;
+        }
+
+        // La fecha debe tener formato válido y no ser futura
+        LocalDate fecha;
+        try {
+            fecha = LocalDate.parse(textoFecha, formato);
+        } catch (DateTimeParseException e) {
+            JOptionPane.showMessageDialog(this,
+                    "Fecha inválida. Use el formato dd/MM/aaaa, por ejemplo 09/11/2026.");
+            return;
+        }
+        if (fecha.isAfter(LocalDate.now())) {
+            JOptionPane.showMessageDialog(this,
+                    "La fecha de apertura no puede ser futura.");
+            return;
+        }
+
+        // Guardar en la base de datos
+        int idPaciente = Integer.parseInt(pacientes.get(indice)[0]);
+        try {
+            dao.registrar(id, idPaciente, estado, fecha);
+            JOptionPane.showMessageDialog(this, "Caso clínico registrado correctamente.");
+        } catch (SQLIntegrityConstraintViolationException e) {
+            JOptionPane.showMessageDialog(this,
+                    "No se pudo registrar: ya existe un caso con ese ID "
+                    + "o el paciente no es válido.");
+        } catch (SQLException e) {
+            JOptionPane.showMessageDialog(this,
+                    "Error al registrar el caso: " + e.getMessage(),
+                    "Error", JOptionPane.ERROR_MESSAGE);
+        }
     }//GEN-LAST:event_btnRegistrarActionPerformed
 
     private void cmbEstadoActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_cmbEstadoActionPerformed
@@ -183,6 +291,242 @@ public class FrmCasoClinico extends javax.swing.JFrame {
     private void cmbPacienteActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_cmbPacienteActionPerformed
         // TODO add your handling code here:
     }//GEN-LAST:event_cmbPacienteActionPerformed
+
+    private void btnBuscarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnBuscarActionPerformed
+            String textoId = txtIdCaso.getText().trim();
+
+        // Campo obligatorio
+        if (textoId.isEmpty()) {
+            JOptionPane.showMessageDialog(this,
+                    "Ingrese el ID del caso que desea buscar.");
+            return;
+        }
+
+        // El ID debe ser numérico
+        int id;
+        try {
+            id = Integer.parseInt(textoId);
+        } catch (NumberFormatException e) {
+            JOptionPane.showMessageDialog(this,
+                    "El ID del caso debe ser un número entero.");
+            return;
+        }
+
+        try {
+            String[] caso = dao.buscar(id);
+
+            if (caso == null) {
+                JOptionPane.showMessageDialog(this,
+                        "No existe un caso clínico con el ID " + id + ".");
+                return;
+            }
+
+            // Seleccionar en el combo al paciente del caso
+            for (int i = 0; i < pacientes.size(); i++) {
+                if (pacientes.get(i)[0].equals(caso[1])) {
+                    cmbPaciente.setSelectedIndex(i);
+                    break;
+                }
+            }
+            cmbEstado.setSelectedItem(caso[2]);
+            txtFechaApertura.setText(caso[3]);
+
+            // Mostrar la fecha de cierre (si existe) y las consultas del paciente
+            StringBuilder texto = new StringBuilder();
+            if (!caso[4].isEmpty()) {
+                texto.append("Caso cerrado el ").append(caso[4]).append("\n");
+            }
+
+            List<String> consultas =
+                    dao.consultasDePaciente(Integer.parseInt(caso[1]));
+            if (consultas.isEmpty()) {
+                texto.append("El paciente no tiene consultas registradas.");
+            } else {
+                for (String c : consultas) {
+                    texto.append(c).append("\n");
+                }
+            }
+            tblConsultas.setText(texto.toString());
+
+        } catch (SQLException e) {
+            JOptionPane.showMessageDialog(this,
+                    "Error al buscar el caso: " + e.getMessage(),
+                    "Error", JOptionPane.ERROR_MESSAGE);
+        }
+    }//GEN-LAST:event_btnBuscarActionPerformed
+
+    private void btnEditarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnEditarActionPerformed
+            String textoId = txtIdCaso.getText().trim();
+        String textoFecha = txtFechaApertura.getText().trim();
+
+        // Campos obligatorios
+        if (textoId.isEmpty() || textoFecha.isEmpty()) {
+            JOptionPane.showMessageDialog(this,
+                    "Debe completar el ID del caso y la fecha de apertura.");
+            return;
+        }
+
+        // El ID debe ser un número entero positivo
+        int id;
+        try {
+            id = Integer.parseInt(textoId);
+            if (id <= 0) {
+                throw new NumberFormatException();
+            }
+        } catch (NumberFormatException e) {
+            JOptionPane.showMessageDialog(this,
+                    "El ID del caso debe ser un número entero positivo.");
+            return;
+        }
+
+        // Debe haber un paciente seleccionado
+        int indice = cmbPaciente.getSelectedIndex();
+        if (indice < 0) {
+            JOptionPane.showMessageDialog(this, "Debe seleccionar un paciente.");
+            return;
+        }
+
+        // Debe haber un estado seleccionado
+        String estado = (String) cmbEstado.getSelectedItem();
+        if (estado == null || estado.equals(".")) {
+            JOptionPane.showMessageDialog(this, "Debe seleccionar el estado del caso.");
+            return;
+        }
+
+        // La fecha debe tener formato válido y no ser futura
+        LocalDate fecha;
+        try {
+            fecha = LocalDate.parse(textoFecha, formato);
+        } catch (DateTimeParseException e) {
+            JOptionPane.showMessageDialog(this,
+                    "Fecha inválida. Use el formato dd/MM/aaaa, por ejemplo 09/11/2026.");
+            return;
+        }
+        if (fecha.isAfter(LocalDate.now())) {
+            JOptionPane.showMessageDialog(this,
+                    "La fecha de apertura no puede ser futura.");
+            return;
+        }
+
+        int idPaciente = Integer.parseInt(pacientes.get(indice)[0]);
+        try {
+            // El caso debe existir y estar abierto
+            String[] existente = dao.buscar(id);
+            if (existente == null) {
+                JOptionPane.showMessageDialog(this,
+                        "No existe un caso clínico con el ID " + id + ".");
+                return;
+            }
+            if (existente[2].equals("Cerrado")) {
+                JOptionPane.showMessageDialog(this,
+                        "El caso " + id + " está cerrado y no se puede editar.");
+                return;
+            }
+
+            // El cierre se hace solo con el botón Cerrar caso
+            if (estado.equals("Cerrado")) {
+                JOptionPane.showMessageDialog(this,
+                        "Para cerrar un caso use el botón Cerrar caso.");
+                return;
+            }
+            // Confirmación antes de guardar
+            int respuesta = JOptionPane.showConfirmDialog(this,
+                    "¿Desea guardar los cambios del caso " + id + "?",
+                    "Confirmar edición", JOptionPane.YES_NO_OPTION);
+            if (respuesta != JOptionPane.YES_OPTION) {
+                return;
+            }
+
+            if (dao.editar(id, idPaciente, estado, fecha)) {
+                JOptionPane.showMessageDialog(this,
+                        "Caso clínico modificado correctamente.");
+            } else {
+                JOptionPane.showMessageDialog(this,
+                        "No se modificó ningún registro.");
+            }
+        } catch (SQLException e) {
+            JOptionPane.showMessageDialog(this,
+                    "Error al modificar el caso: " + e.getMessage(),
+                    "Error", JOptionPane.ERROR_MESSAGE);
+        }
+    }//GEN-LAST:event_btnEditarActionPerformed
+
+    private void btnCerrarCasoActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnCerrarCasoActionPerformed
+            String textoId = txtIdCaso.getText().trim();
+
+        // Campo obligatorio
+        if (textoId.isEmpty()) {
+            JOptionPane.showMessageDialog(this,
+                    "Ingrese el ID del caso que desea cerrar.");
+            return;
+        }
+
+        // El ID debe ser un número entero positivo
+        int id;
+        try {
+            id = Integer.parseInt(textoId);
+            if (id <= 0) {
+                throw new NumberFormatException();
+            }
+        } catch (NumberFormatException e) {
+            JOptionPane.showMessageDialog(this,
+                    "El ID del caso debe ser un número entero positivo.");
+            return;
+        }
+
+        try {
+            // El caso debe existir y estar abierto
+            String[] caso = dao.buscar(id);
+            if (caso == null) {
+                JOptionPane.showMessageDialog(this,
+                        "No existe un caso clínico con el ID " + id + ".");
+                return;
+            }
+            if (caso[2].equals("Cerrado")) {
+                JOptionPane.showMessageDialog(this,
+                        "El caso " + id + " ya está cerrado.");
+                return;
+            }
+
+            // Confirmación antes de cerrar
+            int respuesta = JOptionPane.showConfirmDialog(this,
+                    "¿Desea cerrar el caso " + id + "? "
+                    + "Se registrará la fecha de hoy como fecha de cierre.",
+                    "Confirmar cierre", JOptionPane.YES_NO_OPTION);
+            if (respuesta != JOptionPane.YES_OPTION) {
+                return;
+            }
+
+            LocalDate hoy = LocalDate.now();
+            if (dao.cerrar(id, hoy)) {
+                cmbEstado.setSelectedItem("Cerrado");
+                JOptionPane.showMessageDialog(this,
+                        "Caso clínico cerrado el " + hoy.format(formato) + ".");
+            } else {
+                JOptionPane.showMessageDialog(this,
+                        "No se pudo cerrar el caso " + id + ".");
+            }
+        } catch (SQLException e) {
+            JOptionPane.showMessageDialog(this,
+                    "Error al cerrar el caso: " + e.getMessage(),
+                    "Error", JOptionPane.ERROR_MESSAGE);
+        }
+    }//GEN-LAST:event_btnCerrarCasoActionPerformed
+
+    private void btnLimpiarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnLimpiarActionPerformed
+        txtIdCaso.setText("");
+        txtFechaApertura.setText("");
+        tblConsultas.setText("");
+
+        // Volver los combos a su primera opción
+        cmbEstado.setSelectedIndex(0);
+        if (cmbPaciente.getItemCount() > 0) {
+            cmbPaciente.setSelectedIndex(0);
+        }
+
+        // Dejar el cursor listo para el siguiente ingreso
+        txtIdCaso.requestFocus();
+    }//GEN-LAST:event_btnLimpiarActionPerformed
 
     /**
      * @param args the command line arguments
