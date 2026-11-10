@@ -193,9 +193,8 @@ public class FrmPaciente extends javax.swing.JFrame {
 
     private void btnRegistrarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnRegistrarActionPerformed
         // TODO add your handling code here: 
-      
 
-    // Obtener los datos ingresados
+
     String id = txtId.getText().trim();
     String rut = txtRut.getText().trim();
     String nombre = txtNombre.getText().trim();
@@ -206,19 +205,15 @@ public class FrmPaciente extends javax.swing.JFrame {
     if (id.isEmpty() || rut.isEmpty() || nombre.isEmpty()
             || fecha.isEmpty() || contacto.isEmpty()) {
 
-        JOptionPane.showMessageDialog(
-                this,
-                "Debes completar todos los campos."
-        );
+        JOptionPane.showMessageDialog(this,
+                "Debes completar todos los campos.");
         return;
     }
 
     // Validar RUT
     if (!validarRut(rut)) {
-        JOptionPane.showMessageDialog(
-                this,
-                "RUT inválido. Usa el formato 18812527-K."
-        );
+        JOptionPane.showMessageDialog(this,
+                "RUT inválido. Usa el formato 18812527-K.");
         return;
     }
 
@@ -227,20 +222,15 @@ public class FrmPaciente extends javax.swing.JFrame {
 
     try {
         numeroId = Integer.parseInt(id);
-
     } catch (NumberFormatException e) {
-        JOptionPane.showMessageDialog(
-                this,
-                "El ID debe contener solamente números."
-        );
+        JOptionPane.showMessageDialog(this,
+                "El ID debe contener solamente números.");
         return;
     }
 
     if (numeroId <= 0) {
-        JOptionPane.showMessageDialog(
-                this,
-                "El ID debe ser un número positivo."
-        );
+        JOptionPane.showMessageDialog(this,
+                "El ID debe ser un número positivo.");
         return;
     }
 
@@ -258,22 +248,18 @@ public class FrmPaciente extends javax.swing.JFrame {
         );
 
         if (fechaNacimiento.isAfter(java.time.LocalDate.now())) {
-            JOptionPane.showMessageDialog(
-                    this,
-                    "La fecha de nacimiento no puede ser futura."
-            );
+            JOptionPane.showMessageDialog(this,
+                    "La fecha de nacimiento no puede ser futura.");
             return;
         }
 
     } catch (java.time.DateTimeException e) {
-        JOptionPane.showMessageDialog(
-                this,
-                "Ingresa una fecha válida con formato dd/MM/aaaa."
-        );
+        JOptionPane.showMessageDialog(this,
+                "Ingresa una fecha válida con formato dd/MM/aaaa.");
         return;
     }
 
-    // Guardar paciente en MySQL
+    // Registrar paciente en MySQL
     try {
         PacienteDA0 dao = new PacienteDA0();
 
@@ -285,30 +271,26 @@ public class FrmPaciente extends javax.swing.JFrame {
                 contacto
         );
 
-        JOptionPane.showMessageDialog(
-                this,
-                "Paciente registrado correctamente en la base de datos."
-        );
+        JOptionPane.showMessageDialog(this,
+                "Paciente registrado correctamente en la base de datos.");
 
-        // Limpiar campos después del registro
         btnLimpiarActionPerformed(evt);
 
     } catch (java.sql.SQLIntegrityConstraintViolationException e) {
 
-        JOptionPane.showMessageDialog(
-                this,
-                "No se pudo registrar. El ID o RUT ya existe."
-        );
+        JOptionPane.showMessageDialog(this,
+                "No se pudo registrar. El ID o RUT ya existe.");
 
     } catch (java.sql.SQLException e) {
 
-        JOptionPane.showMessageDialog(
-                this,
-                "Error al guardar el paciente: " + e.getMessage()
-        );
+        JOptionPane.showMessageDialog(this,
+                "Error al guardar el paciente: " + e.getMessage());
     }
 
-     
+
+      
+
+  
      
     }//GEN-LAST:event_btnRegistrarActionPerformed
 
@@ -325,69 +307,102 @@ public class FrmPaciente extends javax.swing.JFrame {
     }//GEN-LAST:event_btnLimpiarActionPerformed
 
     private void btnBuscarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnBuscarActionPerformed
-        // TODO add your handling code here:
-    }//GEN-LAST:event_btnBuscarActionPerformed
-                                                   
-        // Obtener el ID ingresado
-        String id = txtId.getText().trim();
+       
 
-        if (id.isEmpty()) {
-            JOptionPane.showMessageDialog(
-                    this,
-                    "Ingresa el ID del paciente que deseas buscar."
-            );
+
+    String id = txtId.getText().trim();
+
+    if (id.isEmpty()) {
+        JOptionPane.showMessageDialog(this,
+                "Ingresa el ID del paciente que deseas buscar.");
+        return;
+    }
+
+    try {
+        int numeroId = Integer.parseInt(id);
+
+        if (numeroId <= 0) {
+            JOptionPane.showMessageDialog(this,
+                    "El ID debe ser un número positivo.");
             return;
         }
 
-        try {
-            int numeroId = Integer.parseInt(id);
+        PacienteDA0 dao = new PacienteDA0();
 
-            if (numeroId <= 0) {
-                JOptionPane.showMessageDialog(
-                        this,
-                        "El ID debe ser un número positivo."
-                );
-                return;
-            }
+        String[] paciente = dao.buscar(numeroId);
 
-            // Ojo aquí: revisa si tu clase se llama PacienteDAO (con O) o PacienteDA0 (con cero). 
-            // Lo normal es DAO (Data Access Object).
-            PacienteDA0 dao = new PacienteDA0(); 
+        if (paciente != null) {
+            txtId.setText(paciente[0]);
+            txtRut.setText(paciente[1]);
+            txtNombre.setText(paciente[2]);
+            txtFecha.setText(paciente[3]);
+            txtContacto.setText(paciente[4]);
 
-            String[] paciente = dao.buscar(numeroId);
+            JOptionPane.showMessageDialog(this,
+                    "Paciente encontrado correctamente.");
 
-            if (paciente != null) {
-                txtId.setText(paciente[0]);
-                txtRut.setText(paciente[1]);
-                txtNombre.setText(paciente[2]);
-                txtFecha.setText(paciente[3]);
-                txtContacto.setText(paciente[4]);
-
-                JOptionPane.showMessageDialog(
-                        this,
-                        "Paciente encontrado correctamente."
-                );
-
-            } else {
-                JOptionPane.showMessageDialog(
-                        this,
-                        "No se encontró ningún paciente con ese ID."
-                );
-            }
-
-        } catch (NumberFormatException e) {
-            JOptionPane.showMessageDialog(
-                    this,
-                    "El ID debe contener solamente números."
-            );
-
-        } catch (java.sql.SQLException e) {
-            JOptionPane.showMessageDialog(
-                    this,
-                    "Error al buscar el paciente: " + e.getMessage()
-            );
+        } else {
+            JOptionPane.showMessageDialog(this,
+                    "No se encontró ningún paciente con ese ID.");
         }
-    } // <--- LA LLAVE DE CIERRE DEBE IR AQUÍ, AL FINAL DE LA LÓGICA
+
+    } catch (NumberFormatException e) {
+        JOptionPane.showMessageDialog(this,
+                "El ID debe contener solamente números.");
+
+    } catch (java.sql.SQLException e) {
+        JOptionPane.showMessageDialog(this,
+                "Error al buscar el paciente: " + e.getMessage());
+    }
+
+
+        
+    
+      
+        
+        
+    }//GEN-LAST:event_btnBuscarActionPerformed
+     private boolean validarRut(String rut) {
+
+    if (rut == null) {
+        return false;
+    }
+
+    rut = rut.toUpperCase().replace(".", "").replace("-", "");
+
+    if (!rut.matches("[0-9]{7,8}[0-9K]")) {
+        return false;
+    }
+
+    String cuerpo = rut.substring(0, rut.length() - 1);
+    char dv = rut.charAt(rut.length() - 1);
+
+    int suma = 0;
+    int multiplicador = 2;
+
+    for (int i = cuerpo.length() - 1; i >= 0; i--) {
+        suma += (cuerpo.charAt(i) - '0') * multiplicador;
+        multiplicador++;
+
+        if (multiplicador > 7) {
+            multiplicador = 2;
+        }
+    }
+
+    int resultado = 11 - (suma % 11);
+
+    char esperado;
+
+    if (resultado == 11) {
+        esperado = '0';
+    } else if (resultado == 10) {
+        esperado = 'K';
+    } else {
+        esperado = (char) ('0' + resultado);
+    }
+
+    return dv == esperado;
+}    
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JLabel ID;
     private javax.swing.JLabel TxtContacto;
