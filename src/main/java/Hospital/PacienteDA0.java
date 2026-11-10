@@ -38,6 +38,7 @@ import java.time.format.DateTimeFormatter;
 
             ps.executeUpdate();
         }
+        
     }
 
     // Buscar un paciente por su ID
@@ -106,4 +107,34 @@ import java.time.format.DateTimeFormatter;
             return ps.executeUpdate() > 0;
         }
     }
+    
+// Listar todos los pacientes registrados
+public java.util.List<String[]> listar() throws SQLException {
+
+    java.util.List<String[]> pacientes = new java.util.ArrayList<>();
+
+    String sql = "SELECT id_paciente, rut, nombre, "
+            + "fecha_nacimiento, contacto "
+            + "FROM paciente ORDER BY id_paciente";
+
+    try (Connection conexion = ConexionBD.conectar();
+         PreparedStatement ps = conexion.prepareStatement(sql);
+         ResultSet rs = ps.executeQuery()) {
+
+        while (rs.next()) {
+
+            pacientes.add(new String[]{
+                String.valueOf(rs.getInt("id_paciente")),
+                rs.getString("rut"),
+                rs.getString("nombre"),
+                rs.getDate("fecha_nacimiento")
+                        .toLocalDate().format(formato),
+                rs.getString("contacto")
+            });
+        }
+    }
+
+    return pacientes;
+}
+
 }
