@@ -75,8 +75,10 @@ public class FrmPaciente extends javax.swing.JFrame {
         btnBuscar.addActionListener(this::btnBuscarActionPerformed);
 
         btnEditar.setText("Editar");
+        btnEditar.addActionListener(this::btnEditarActionPerformed);
 
         btnEliminar.setText("Eliminar");
+        btnEliminar.addActionListener(this::btnEliminarActionPerformed);
 
         btnLimpiar.setText("Limpiar");
         btnLimpiar.addActionListener(this::btnLimpiarActionPerformed);
@@ -362,17 +364,177 @@ public class FrmPaciente extends javax.swing.JFrame {
         
         
     }//GEN-LAST:event_btnBuscarActionPerformed
+
+    private void btnEditarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnEditarActionPerformed
+        // TODO add your handling code here:
+    String id = txtId.getText().trim();
+    String rut = txtRut.getText().trim();
+    String nombre = txtNombre.getText().trim();
+    String fecha = txtFecha.getText().trim();
+    String contacto = txtContacto.getText().trim();
+
+    // Validar campos vacíos
+    if (id.isEmpty() || rut.isEmpty() || nombre.isEmpty()
+            || fecha.isEmpty() || contacto.isEmpty()) {
+
+        JOptionPane.showMessageDialog(this,
+                "Debes completar todos los campos.");
+        return;
+    }
+
+    // Validar RUT
+    if (!validarRut(rut)) {
+        JOptionPane.showMessageDialog(this,
+                "El RUT ingresado no es válido.");
+        return;
+    }
+
+    // Validar ID
+    int numeroId;
+
+    try {
+        numeroId = Integer.parseInt(id);
+
+        if (numeroId <= 0) {
+            JOptionPane.showMessageDialog(this,
+                    "El ID debe ser positivo.");
+            return;
+        }
+
+    } catch (NumberFormatException e) {
+        JOptionPane.showMessageDialog(this,
+                "El ID debe contener solamente números.");
+        return;
+    }
+
+    // Validar fecha
+    java.time.LocalDate fechaNacimiento;
+
+    try {
+        fechaNacimiento = java.time.LocalDate.parse(
+                fecha,
+                java.time.format.DateTimeFormatter
+                        .ofPattern("dd/MM/uuuu")
+                        .withResolverStyle(
+                                java.time.format.ResolverStyle.STRICT)
+        );
+
+        if (fechaNacimiento.isAfter(java.time.LocalDate.now())) {
+            JOptionPane.showMessageDialog(this,
+                    "La fecha no puede ser futura.");
+            return;
+        }
+
+    } catch (java.time.DateTimeException e) {
+        JOptionPane.showMessageDialog(this,
+                "Ingresa una fecha válida (dd/MM/aaaa).");
+        return;
+    }
+
+    // Actualizar paciente en MySQL
+    try {
+        PacienteDA0 dao = new PacienteDA0();
+
+        boolean actualizado = dao.editar(
+                numeroId,
+                rut,
+                nombre,
+                fechaNacimiento,
+                contacto
+        );
+
+        if (actualizado) {
+            JOptionPane.showMessageDialog(this,
+                    "Paciente actualizado correctamente.");
+        } else {
+            JOptionPane.showMessageDialog(this,
+                    "No se encontró el paciente para actualizar.");
+        }
+
+    } catch (java.sql.SQLException e) {
+        JOptionPane.showMessageDialog(this,
+                "Error al actualizar: " + e.getMessage());
+    }
+
+
+    
+
+    }//GEN-LAST:event_btnEditarActionPerformed
+
+    private void btnEliminarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnEliminarActionPerformed
+        // TODO add your handling code here:
+        
+
+
+    String id = txtId.getText().trim();
+
+    // Validar que se ingrese un ID
+    if (id.isEmpty()) {
+        JOptionPane.showMessageDialog(this,
+                "Ingresa el ID del paciente que deseas eliminar.");
+        return;
+    }
+
+    // Validar que el ID sea numérico
+    int numeroId;
+
+    try {
+        numeroId = Integer.parseInt(id);
+
+        if (numeroId <= 0) {
+            JOptionPane.showMessageDialog(this,
+                    "El ID debe ser un número positivo.");
+            return;
+        }
+
+    } catch (NumberFormatException e) {
+        JOptionPane.showMessageDialog(this,
+                "El ID debe contener solamente números.");
+        return;
+    }
+
+    // Solicitar confirmación antes de eliminar
+    int confirmacion = JOptionPane.showConfirmDialog(
+            this,
+            "¿Estás seguro de eliminar este paciente?",
+            "Confirmar eliminación",
+            JOptionPane.YES_NO_OPTION,
+            JOptionPane.WARNING_MESSAGE
+    );
+
+    if (confirmacion != JOptionPane.YES_OPTION) {
+        return;
+    }
+
+    // Eliminar paciente de MySQL
+    try {
+        PacienteDA0 dao = new PacienteDA0();
+
+        boolean eliminado = dao.eliminar(numeroId);
+
+        if (eliminado) {
+
+            JOptionPane.showMessageDialog(this,
+                    "Paciente eliminado correctamente.");
+
+            // Limpiar formulario
+            btnLimpiarActionPerformed(evt);
+
+        } else {
+
+            JOptionPane.showMessageDialog(this,
+                    "No se encontró ningún paciente con ese ID.");
+        }
+
+    } catch (java.sql.SQLException e) {
+
+        JOptionPane.showMessageDialog(this,
+                "Error al eliminar el paciente: " + e.getMessage());
+    }
+
+
+    }//GEN-LAST:event_btnEliminarActionPerformed
      private boolean validarRut(String rut) {
-
-    if (rut == null) {
-        return false;
-    }
-
-    rut = rut.toUpperCase().replace(".", "").replace("-", "");
-
-    if (!rut.matches("[0-9]{7,8}[0-9K]")) {
-        return false;
-    }
 
     String cuerpo = rut.substring(0, rut.length() - 1);
     char dv = rut.charAt(rut.length() - 1);
