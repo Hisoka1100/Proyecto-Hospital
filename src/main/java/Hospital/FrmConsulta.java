@@ -7,7 +7,12 @@ import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
 import java.time.format.ResolverStyle;
-
+import java.sql.SQLException;
+import java.sql.SQLIntegrityConstraintViolationException;
+import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
+import javax.swing.JOptionPane;
 /**
  *
  * @author felipebaeza
@@ -19,8 +24,45 @@ public class FrmConsulta extends javax.swing.JFrame {
     /**
      * Creates new form Frmconsulta
      */
+        private final ConsultaDA0 dao = new ConsultaDA0();
+
+    // Mismo formato de fecha y hora en todo el formulario
+    private final DateTimeFormatter formato =
+            DateTimeFormatter.ofPattern("dd/MM/uuuu HH:mm")
+                    .withResolverStyle(ResolverStyle.STRICT);
+
+    // Datos de los combos: cada elemento es {id, nombre}
+    private List<String[]> pacientes = new ArrayList<>();
+    private List<String[]> profesionales = new ArrayList<>();
+
     public FrmConsulta() {
         initComponents();
+        cargarCombos();
+    }
+
+    // Llena los combos de paciente y profesional desde la base de datos
+    private void cargarCombos() {
+        try {
+            pacientes = dao.listarPacientes();
+            cmbPaciente.removeAllItems();
+            for (String[] p : pacientes) {
+                cmbPaciente.addItem(p[0] + " - " + p[1]);
+            }
+
+            profesionales = dao.listarProfesionales();
+            cmbProfesional.removeAllItems();
+            for (String[] p : profesionales) {
+                cmbProfesional.addItem(p[0] + " - " + p[1]);
+            }
+
+            // Que el usuario deba elegir, en vez de quedar uno preseleccionado
+            cmbPaciente.setSelectedIndex(-1);
+            cmbProfesional.setSelectedIndex(-1);
+        } catch (SQLException e) {
+            JOptionPane.showMessageDialog(this,
+                    "No se pudieron cargar los datos: " + e.getMessage(),
+                    "Error", JOptionPane.ERROR_MESSAGE);
+        }
     }
 
     /**
@@ -62,7 +104,7 @@ public class FrmConsulta extends javax.swing.JFrame {
 
         jLabel3.setText("Paciente");
 
-        jLabel4.setText("Fecha");
+        jLabel4.setText("Fecha y hora");
 
         jLabel5.setText("Profesional");
 
@@ -181,62 +223,68 @@ public class FrmConsulta extends javax.swing.JFrame {
     }// </editor-fold>//GEN-END:initComponents
 
     private void btnRegistrarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnRegistrarActionPerformed
-        // TODO add your handling code here:
-        String id = txtId.getText().trim();
-String fecha = txtFecha.getText().trim();
-String motivo = txtMotivo.getText().trim();
+            String textoId = txtId.getText().trim();
+        String textoFecha = txtFecha.getText().trim();
+        String motivo = txtMotivo.getText().trim();
 
-if (id.isEmpty() || fecha.isEmpty() || motivo.isEmpty()
-        || cmbPaciente.getSelectedIndex() == -1
-        || cmbProfesional.getSelectedIndex() == -1) {
+        // Campos obligatorios
+        if (textoId.isEmpty() || textoFecha.isEmpty() || motivo.isEmpty()
+                || cmbPaciente.getSelectedIndex() == -1
+                || cmbProfesional.getSelectedIndex() == -1) {
+            JOptionPane.showMessageDialog(this,
+                    "Complete todos los campos antes de registrar.");
+            return;
+        }
 
-    javax.swing.JOptionPane.showMessageDialog(
-        this,
-        "Complete todos los campos antes de registrar."
-    );
-    return;
-}
+        // El ID debe ser un número entero positivo
+        int id;
+        try {
+            id = Integer.parseInt(textoId);
+            if (id <= 0) {
+                throw new NumberFormatException();
+            }
+        } catch (NumberFormatException e) {
+            JOptionPane.showMessageDialog(this,
+                    "El ID debe ser un número entero positivo.");
+            return;
+        }
 
-try {
-    int numeroId = Integer.parseInt(id);
+        // La fecha y hora deben tener formato válido
+        LocalDateTime fechaHora;
+        try {
+            fechaHora = LocalDateTime.parse(textoFecha, formato);
+        } catch (DateTimeParseException e) {
+            JOptionPane.showMessageDialog(this,
+                    "Fecha y hora inválidas. Use el formato dd/MM/aaaa HH:mm, "
+                    + "por ejemplo 15/11/2026 10:30.");
+            return;
+        }
 
-    if (numeroId <= 0) {
-        javax.swing.JOptionPane.showMessageDialog(
-            this, "El ID debe ser un número positivo."
-        );
-        return;
-    }
+        int idPaciente = Integer.parseInt(
+                pacientes.get(cmbPaciente.getSelectedIndex())[0]);
+        int idProfesional = Integer.parseInt(
+                profesionales.get(cmbProfesional.getSelectedIndex())[0]);
 
-} catch (NumberFormatException e) {
-    javax.swing.JOptionPane.showMessageDialog(
-        this, "El ID debe contener solo números."
-    );
-    return;
-}
-DateTimeFormatter formato = DateTimeFormatter
-        .ofPattern("dd/MM/uuuu")
-        .withResolverStyle(ResolverStyle.STRICT);
+        try {
+            // Un profesional no puede tener dos consultas a la misma hora
+            if (dao.existeHorario(idProfesional, fechaHora, 0)) {
+                JOptionPane.showMessageDialog(this,
+                        "El profesional ya tiene una consulta a esa fecha y hora. "
+                        + "Elija otro horario.");
+                return;
+            }
 
-LocalDate fechaConsulta;
-
-try {
-    fechaConsulta = LocalDate.parse(fecha, formato);
-} catch (DateTimeParseException e) {
-    javax.swing.JOptionPane.showMessageDialog(
-        this, "Ingrese una fecha válida con formato dd/MM/aaaa."
-    );
-    return;
-}
-
-if (fechaConsulta.isAfter(LocalDate.now())) {
-    javax.swing.JOptionPane.showMessageDialog(
-        this, "La fecha de consulta no puede ser futura."
-    );
-    return;
-}
-javax.swing.JOptionPane.showMessageDialog(
-    this, "Validación correcta. Consulta lista para registrar."
-);
+            dao.registrar(id, idPaciente, idProfesional, fechaHora, motivo);
+            JOptionPane.showMessageDialog(this,
+                    "Consulta registrada correctamente.");
+        } catch (SQLIntegrityConstraintViolationException e) {
+            JOptionPane.showMessageDialog(this,
+                    "No se pudo registrar: ya existe una consulta con ese ID.");
+        } catch (SQLException e) {
+            JOptionPane.showMessageDialog(this,
+                    "Error al registrar la consulta: " + e.getMessage(),
+                    "Error", JOptionPane.ERROR_MESSAGE);
+        }
         
     }//GEN-LAST:event_btnRegistrarActionPerformed
 
@@ -251,108 +299,197 @@ javax.swing.JOptionPane.showMessageDialog(
     }//GEN-LAST:event_btnLimpiarActionPerformed
 
     private void btnBuscarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnBuscarActionPerformed
-        // TODO add your handling code here:
-        String id = txtId.getText().trim();
+            String textoId = txtId.getText().trim();
 
-if (id.isEmpty()) {
-    javax.swing.JOptionPane.showMessageDialog(
-        this, "Ingrese el ID de la consulta que desea buscar."
-    );
-    return;
-}
+        // Campo obligatorio
+        if (textoId.isEmpty()) {
+            JOptionPane.showMessageDialog(this,
+                    "Ingrese el ID de la consulta que desea buscar.");
+            return;
+        }
 
-try {
-    int numeroId = Integer.parseInt(id);
+        // El ID debe ser un número entero positivo
+        int id;
+        try {
+            id = Integer.parseInt(textoId);
+            if (id <= 0) {
+                throw new NumberFormatException();
+            }
+        } catch (NumberFormatException e) {
+            JOptionPane.showMessageDialog(this,
+                    "El ID debe ser un número entero positivo.");
+            return;
+        }
 
-    if (numeroId <= 0) {
-        javax.swing.JOptionPane.showMessageDialog(
-            this, "El ID debe ser un número positivo."
-        );
-        return;
-    }
+        try {
+            String[] consulta = dao.buscar(id);
 
-    javax.swing.JOptionPane.showMessageDialog(
-        this, "ID válido. La búsqueda se realizará al conectar la base de datos."
-    );
+            if (consulta == null) {
+                JOptionPane.showMessageDialog(this,
+                        "No existe una consulta con el ID " + id + ".");
+                return;
+            }
 
-} catch (NumberFormatException e) {
-    javax.swing.JOptionPane.showMessageDialog(
-        this, "El ID debe contener solo números."
-    );
-}
+            // Seleccionar en los combos al paciente y al profesional de la consulta
+            for (int i = 0; i < pacientes.size(); i++) {
+                if (pacientes.get(i)[0].equals(consulta[1])) {
+                    cmbPaciente.setSelectedIndex(i);
+                    break;
+                }
+            }
+            for (int i = 0; i < profesionales.size(); i++) {
+                if (profesionales.get(i)[0].equals(consulta[2])) {
+                    cmbProfesional.setSelectedIndex(i);
+                    break;
+                }
+            }
+
+            txtFecha.setText(consulta[3]);
+            txtMotivo.setText(consulta[4]);
+
+        } catch (SQLException e) {
+            JOptionPane.showMessageDialog(this,
+                    "Error al buscar la consulta: " + e.getMessage(),
+                    "Error", JOptionPane.ERROR_MESSAGE);
+        }
     }//GEN-LAST:event_btnBuscarActionPerformed
 
     private void btnEditarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnEditarActionPerformed
-        // TODO add your handling code here:
-        String id = txtId.getText().trim();
+            String textoId = txtId.getText().trim();
+        String textoFecha = txtFecha.getText().trim();
+        String motivo = txtMotivo.getText().trim();
 
-if (id.isEmpty()) {
-    javax.swing.JOptionPane.showMessageDialog(
-        this, "Ingrese el ID de la consulta que desea editar."
-    );
-    return;
-}
+        // Campos obligatorios
+        if (textoId.isEmpty() || textoFecha.isEmpty() || motivo.isEmpty()
+                || cmbPaciente.getSelectedIndex() == -1
+                || cmbProfesional.getSelectedIndex() == -1) {
+            JOptionPane.showMessageDialog(this,
+                    "Complete todos los campos antes de editar.");
+            return;
+        }
 
-try {
-    int numeroId = Integer.parseInt(id);
+        // El ID debe ser un número entero positivo
+        int id;
+        try {
+            id = Integer.parseInt(textoId);
+            if (id <= 0) {
+                throw new NumberFormatException();
+            }
+        } catch (NumberFormatException e) {
+            JOptionPane.showMessageDialog(this,
+                    "El ID debe ser un número entero positivo.");
+            return;
+        }
 
-    if (numeroId <= 0) {
-        javax.swing.JOptionPane.showMessageDialog(
-            this, "El ID debe ser un número positivo."
-        );
-        return;
-    }
+        // La fecha y hora deben tener formato válido
+        LocalDateTime fechaHora;
+        try {
+            fechaHora = LocalDateTime.parse(textoFecha, formato);
+        } catch (DateTimeParseException e) {
+            JOptionPane.showMessageDialog(this,
+                    "Fecha y hora inválidas. Use el formato dd/MM/aaaa HH:mm, "
+                    + "por ejemplo 15/11/2026 10:30.");
+            return;
+        }
 
-    javax.swing.JOptionPane.showMessageDialog(
-        this, "ID válido. La edición estará disponible al conectar la base de datos."
-    );
+        int idPaciente = Integer.parseInt(
+                pacientes.get(cmbPaciente.getSelectedIndex())[0]);
+        int idProfesional = Integer.parseInt(
+                profesionales.get(cmbProfesional.getSelectedIndex())[0]);
 
-} catch (NumberFormatException e) {
-    javax.swing.JOptionPane.showMessageDialog(
-        this, "El ID debe contener solo números."
-    );
-}
+        try {
+            // La consulta debe existir
+            if (dao.buscar(id) == null) {
+                JOptionPane.showMessageDialog(this,
+                        "No existe una consulta con el ID " + id + ".");
+                return;
+            }
+
+            // El profesional no puede tener otra consulta a la misma hora
+            if (dao.existeHorario(idProfesional, fechaHora, id)) {
+                JOptionPane.showMessageDialog(this,
+                        "El profesional ya tiene otra consulta a esa fecha y hora. "
+                        + "Elija otro horario.");
+                return;
+            }
+
+            // Confirmación antes de guardar
+            int respuesta = JOptionPane.showConfirmDialog(this,
+                    "¿Desea guardar los cambios de la consulta " + id + "?",
+                    "Confirmar edición", JOptionPane.YES_NO_OPTION);
+            if (respuesta != JOptionPane.YES_OPTION) {
+                return;
+            }
+
+            if (dao.editar(id, idPaciente, idProfesional, fechaHora, motivo)) {
+                JOptionPane.showMessageDialog(this,
+                        "Consulta modificada correctamente.");
+            } else {
+                JOptionPane.showMessageDialog(this,
+                        "No se modificó ningún registro.");
+            }
+        } catch (SQLException e) {
+            JOptionPane.showMessageDialog(this,
+                    "Error al modificar la consulta: " + e.getMessage(),
+                    "Error", JOptionPane.ERROR_MESSAGE);
+        }
     }//GEN-LAST:event_btnEditarActionPerformed
 
     private void btnEliminarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnEliminarActionPerformed
-        // TODO add your handling code here:
-        String id = txtId.getText().trim();
+            String textoId = txtId.getText().trim();
 
-if (id.isEmpty()) {
-    javax.swing.JOptionPane.showMessageDialog(
-        this, "Ingrese el ID de la consulta que desea eliminar."
-    );
-    return;
-}
+        // Campo obligatorio
+        if (textoId.isEmpty()) {
+            JOptionPane.showMessageDialog(this,
+                    "Ingrese el ID de la consulta que desea eliminar.");
+            return;
+        }
 
-try {
-    int numeroId = Integer.parseInt(id);
+        // El ID debe ser un número entero positivo
+        int id;
+        try {
+            id = Integer.parseInt(textoId);
+            if (id <= 0) {
+                throw new NumberFormatException();
+            }
+        } catch (NumberFormatException e) {
+            JOptionPane.showMessageDialog(this,
+                    "El ID debe ser un número entero positivo.");
+            return;
+        }
 
-    if (numeroId <= 0) {
-        javax.swing.JOptionPane.showMessageDialog(
-            this, "El ID debe ser un número positivo."
-        );
-        return;
-    }
+        try {
+            // La consulta debe existir
+            if (dao.buscar(id) == null) {
+                JOptionPane.showMessageDialog(this,
+                        "No existe una consulta con el ID " + id + ".");
+                return;
+            }
 
-    int respuesta = javax.swing.JOptionPane.showConfirmDialog(
-        this,
-        "¿Está seguro de que desea eliminar la consulta con ID " + numeroId + "?",
-        "Confirmar eliminación",
-        javax.swing.JOptionPane.YES_NO_OPTION
-    );
+            // Confirmación antes de eliminar
+            int respuesta = JOptionPane.showConfirmDialog(this,
+                    "¿Está seguro de que desea eliminar la consulta con ID " + id + "?",
+                    "Confirmar eliminación", JOptionPane.YES_NO_OPTION);
+            if (respuesta != JOptionPane.YES_OPTION) {
+                return;
+            }
 
-    if (respuesta == javax.swing.JOptionPane.YES_OPTION) {
-        javax.swing.JOptionPane.showMessageDialog(
-            this, "La eliminación estará disponible al conectar la base de datos."
-        );
-    }
-
-} catch (NumberFormatException e) {
-    javax.swing.JOptionPane.showMessageDialog(
-        this, "El ID debe contener solo números."
-    );
-}
+            if (dao.eliminar(id)) {
+                JOptionPane.showMessageDialog(this,
+                        "Consulta eliminada correctamente.");
+                btnLimpiarActionPerformed(evt);
+            } else {
+                JOptionPane.showMessageDialog(this,
+                        "No se eliminó ningún registro.");
+            }
+        } catch (SQLIntegrityConstraintViolationException e) {
+            JOptionPane.showMessageDialog(this,
+                    "No se puede eliminar: la consulta tiene un diagnóstico asociado.");
+        } catch (SQLException e) {
+            JOptionPane.showMessageDialog(this,
+                    "Error al eliminar la consulta: " + e.getMessage(),
+                    "Error", JOptionPane.ERROR_MESSAGE);
+        }
     }//GEN-LAST:event_btnEliminarActionPerformed
 
     /**
