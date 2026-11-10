@@ -123,7 +123,7 @@ public class CasoClinicoDA0 {
         // Consultas del paciente, para mostrarlas en el área de texto
     public List<String> consultasDePaciente(int idPaciente) throws SQLException {
 
-        String sql = "SELECT fecha_hora, estado FROM consulta "
+        String sql = "SELECT fecha_hora, motivo FROM consulta "
                 + "WHERE id_paciente = ? ORDER BY fecha_hora";
         List<String> lista = new ArrayList<>();
 
@@ -138,7 +138,7 @@ public class CasoClinicoDA0 {
                             rs.getObject("fecha_hora", java.time.LocalDateTime.class);
                     lista.add(fechaHora.format(
                             DateTimeFormatter.ofPattern("dd/MM/uuuu HH:mm"))
-                            + " - " + rs.getString("estado"));
+                            + " - " + rs.getString("motivo"));
                 }
             }
         }
