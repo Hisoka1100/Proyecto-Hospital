@@ -43,7 +43,7 @@ public class FrmDiagnostico extends javax.swing.JFrame {
         btnEliminar = new javax.swing.JButton();
         txtIdConsulta = new javax.swing.JLabel();
 
-        setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
+        setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
 
         jLabel1.setBackground(new java.awt.Color(0, 102, 153));
         jLabel1.setFont(new java.awt.Font("Helvetica Neue", 0, 24)); // NOI18N
