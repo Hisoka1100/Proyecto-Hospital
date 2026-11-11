@@ -66,7 +66,7 @@ public class FrmPaciente extends javax.swing.JFrame {
         tabla = new javax.swing.JScrollPane();
         tablaPacientes = new javax.swing.JTable();
 
-        setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
+        setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
 
         ID.setText("ID");
 
