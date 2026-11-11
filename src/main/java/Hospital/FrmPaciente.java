@@ -229,31 +229,37 @@ public class FrmPaciente extends javax.swing.JFrame {
 
     private void btnRegistrarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnRegistrarActionPerformed
         // TODO add your handling code here: 
+        
+String id = txtId.getText().trim();
+String rut = txtRut.getText().trim();
+String nombre = txtNombre.getText().trim();
+String fecha = txtFecha.getText().trim();
+String contacto = txtContacto.getText().trim();
 
+// Validar campos vacíos
+if (id.isEmpty() || rut.isEmpty() || nombre.isEmpty()
+        || fecha.isEmpty() || contacto.isEmpty()) {
 
-    String id = txtId.getText().trim();
-    String rut = txtRut.getText().trim();
-    String nombre = txtNombre.getText().trim();
-    String fecha = txtFecha.getText().trim();
-    String contacto = txtContacto.getText().trim();
+    JOptionPane.showMessageDialog(this,
+            "Debes completar todos los campos.");
+    return;
+}
 
-    // Validar campos vacíos
-    if (id.isEmpty() || rut.isEmpty() || nombre.isEmpty()
-            || fecha.isEmpty() || contacto.isEmpty()) {
+// Validar RUT
+if (!validarRut(rut)) {
+    JOptionPane.showMessageDialog(this,
+            "El RUT ingresado no es válido.");
+    return;
+}
 
-        JOptionPane.showMessageDialog(this,
-                "Debes completar todos los campos.");
-        return;
-    }
+// Normalizar RUT para guardarlo en MySQL
+rut = rut.replaceAll("[^0-9Kk]", "").toUpperCase();
 
-    // Validar RUT
-    if (!validarRut(rut)) {
-        JOptionPane.showMessageDialog(this,
-                "RUT inválido. Usa el formato 18812527-K.");
-        return;
-    }
+rut = rut.substring(0, rut.length() - 1)
+         + "-"
+         + rut.charAt(rut.length() - 1);
 
-    // Validar ID
+     // Validar ID
     int numeroId;
 
     try {
@@ -404,6 +410,14 @@ public class FrmPaciente extends javax.swing.JFrame {
         // TODO add your handling code here:
     String id = txtId.getText().trim();
     String rut = txtRut.getText().trim();
+        rut = rut.replace(".", "")
+         .replace("-", "")
+         .replace(" ", "")
+         .toUpperCase();
+
+        rut = rut.substring(0, rut.length() - 1)
+         + "-"
+         + rut.charAt(rut.length() - 1);
     String nombre = txtNombre.getText().trim();
     String fecha = txtFecha.getText().trim();
     String contacto = txtContacto.getText().trim();
@@ -571,16 +585,34 @@ public class FrmPaciente extends javax.swing.JFrame {
 
 
     }//GEN-LAST:event_btnEliminarActionPerformed
-     private boolean validarRut(String rut) {
+    
+// Validar RUT chileno mediante su dígito verificador
+private boolean validarRut(String rut) {
 
-    String cuerpo = rut.substring(0, rut.length() - 1);
-    char dv = rut.charAt(rut.length() - 1);
+    if (rut == null || rut.trim().isEmpty()) {
+        return false;
+    }
+
+    // Eliminar puntos, guiones y espacios; convertir a mayúscula
+    String rutLimpio = rut.replace(".", "")
+                          .replace("-", "")
+                          .replace(" ", "")
+                          .toUpperCase();
+
+    // Comprobar que tenga entre 6 y 8 dígitos y un dígito verificador
+    if (!rutLimpio.matches("[0-9]{6,8}[0-9K]")) {
+        return false;
+    }
+
+    String cuerpo = rutLimpio.substring(0, rutLimpio.length() - 1);
+    char dv = rutLimpio.charAt(rutLimpio.length() - 1);
 
     int suma = 0;
     int multiplicador = 2;
 
     for (int i = cuerpo.length() - 1; i >= 0; i--) {
         suma += (cuerpo.charAt(i) - '0') * multiplicador;
+
         multiplicador++;
 
         if (multiplicador > 7) {
@@ -601,8 +633,8 @@ public class FrmPaciente extends javax.swing.JFrame {
     }
 
     return dv == esperado;
-}    
-     
+}
+
 private void cargarPacientes() {
 
     javax.swing.table.DefaultTableModel modelo =
