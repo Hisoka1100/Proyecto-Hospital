@@ -11,6 +11,7 @@ package Hospital;
 public class FrmEspecialidad extends javax.swing.JFrame {
     
     private static final java.util.logging.Logger logger = java.util.logging.Logger.getLogger(FrmEspecialidad.class.getName());
+    private final EspecialidadDAO dao = new EspecialidadDAO();
 
     /**
      * Creates new form FrmEspecialidad
@@ -133,163 +134,157 @@ public class FrmEspecialidad extends javax.swing.JFrame {
     }// </editor-fold>//GEN-END:initComponents
 
     private void btnRegistrarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnRegistrarActionPerformed
-        // TODO add your handling code here:
-        String id = txtId.getText().trim();
-String nombre = txtNombre.getText().trim();
-String descripcion = txtDescripcionareadetexto.getText().trim();
+        Integer id = leerId();
+        String nombre = txtNombre.getText().trim();
+        if (id == null || !validarNombre(nombre)) {
+            return;
+        }
 
-// Comprobar que los campos estén completos
-if (id.isEmpty() || nombre.isEmpty() || descripcion.isEmpty()) {
-    javax.swing.JOptionPane.showMessageDialog(
-        this, "Complete todos los campos antes de registrar."
-    );
-    return;
-}
-
-// Validar que el ID sea un número positivo
-try {
-    int numeroId = Integer.parseInt(id);
-
-    if (numeroId <= 0) {
-        javax.swing.JOptionPane.showMessageDialog(
-            this, "El ID debe ser un número positivo."
-        );
-        return;
-    }
-
-} catch (NumberFormatException e) {
-    javax.swing.JOptionPane.showMessageDialog(
-        this, "El ID debe contener solo números."
-    );
-    return;
-}
-
-javax.swing.JOptionPane.showMessageDialog(
-    this, "Validación correcta. Especialidad lista para registrar."
-);
-        
-
-        
-        
+        try {
+            dao.registrar(id, nombre, descripcion());
+            mensaje("Especialidad registrada correctamente.", javax.swing.JOptionPane.INFORMATION_MESSAGE);
+            limpiar();
+        } catch (java.sql.SQLIntegrityConstraintViolationException e) {
+            mensaje("No se pudo registrar: el ID o el nombre de la especialidad ya existe.",
+                    javax.swing.JOptionPane.ERROR_MESSAGE);
+        } catch (java.sql.SQLException e) {
+            mensaje("Error al registrar la especialidad: " + e.getMessage(),
+                    javax.swing.JOptionPane.ERROR_MESSAGE);
+        }
     }//GEN-LAST:event_btnRegistrarActionPerformed
 
     private void btnBuscarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnBuscarActionPerformed
-        // TODO add your handling code here:
-        String id = txtId.getText().trim();
+        Integer id = leerId();
+        if (id == null) {
+            return;
+        }
 
-if (id.isEmpty()) {
-    javax.swing.JOptionPane.showMessageDialog(
-        this, "Ingrese el ID de la especialidad que desea buscar."
-    );
-    return;
-}
-
-try {
-    int numeroId = Integer.parseInt(id);
-
-    if (numeroId <= 0) {
-        javax.swing.JOptionPane.showMessageDialog(
-            this, "El ID debe ser un número positivo."
-        );
-        return;
-    }
-
-    javax.swing.JOptionPane.showMessageDialog(
-        this, "ID válido. La búsqueda estará disponible al conectar MySQL."
-    );
-
-} catch (NumberFormatException e) {
-    javax.swing.JOptionPane.showMessageDialog(
-        this, "El ID debe contener solo números."
-    );
-}
+        try {
+            String[] datos = dao.buscar(id);
+            if (datos == null) {
+                mensaje("No existe una especialidad con ese ID.",
+                        javax.swing.JOptionPane.INFORMATION_MESSAGE);
+                return;
+            }
+            txtNombre.setText(datos[1]);
+            txtDescripcionareadetexto.setText(datos[2] == null ? "" : datos[2]);
+        } catch (java.sql.SQLException e) {
+            mensaje("Error al buscar la especialidad: " + e.getMessage(),
+                    javax.swing.JOptionPane.ERROR_MESSAGE);
+        }
     }//GEN-LAST:event_btnBuscarActionPerformed
 
     private void btnEditarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnEditarActionPerformed
-        // TODO add your handling code here:
-        String id = txtId.getText().trim();
+        Integer id = leerId();
+        String nombre = txtNombre.getText().trim();
+        if (id == null || !validarNombre(nombre)) {
+            return;
+        }
 
-if (id.isEmpty()) {
-    javax.swing.JOptionPane.showMessageDialog(
-        this, "Ingrese el ID de la especialidad que desea editar."
-    );
-    return;
-}
-
-try {
-    int numeroId = Integer.parseInt(id);
-
-    if (numeroId <= 0) {
-        javax.swing.JOptionPane.showMessageDialog(
-            this, "El ID debe ser un número positivo."
-        );
-        return;
-    }
-
-    javax.swing.JOptionPane.showMessageDialog(
-        this, "ID válido. La edición estará disponible al conectar MySQL."
-    );
-
-} catch (NumberFormatException e) {
-    javax.swing.JOptionPane.showMessageDialog(
-        this, "El ID debe contener solo números."
-    );
-}
+        try {
+            if (dao.editar(id, nombre, descripcion())) {
+                mensaje("Especialidad actualizada correctamente.",
+                        javax.swing.JOptionPane.INFORMATION_MESSAGE);
+            } else {
+                mensaje("No existe una especialidad con ese ID.",
+                        javax.swing.JOptionPane.INFORMATION_MESSAGE);
+            }
+        } catch (java.sql.SQLIntegrityConstraintViolationException e) {
+            mensaje("No se pudo actualizar: ya existe otra especialidad con ese nombre.",
+                    javax.swing.JOptionPane.ERROR_MESSAGE);
+        } catch (java.sql.SQLException e) {
+            mensaje("Error al editar la especialidad: " + e.getMessage(),
+                    javax.swing.JOptionPane.ERROR_MESSAGE);
+        }
     }//GEN-LAST:event_btnEditarActionPerformed
 
     private void btnLimpiarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnLimpiarActionPerformed
-        // TODO add your handling code here:
-
-        txtId.setText("");
-        txtNombre.setText("");
-        txtDescripcionareadetexto.setText("");
-        
+        limpiar();
     }//GEN-LAST:event_btnLimpiarActionPerformed
 
     private void btnEliminarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnEliminarActionPerformed
-        // TODO add your handling code here:
-        String id = txtId.getText().trim();
+        Integer id = leerId();
+        if (id == null) {
+            return;
+        }
 
-if (id.isEmpty()) {
-    javax.swing.JOptionPane.showMessageDialog(
-        this, "Ingrese el ID de la especialidad que desea eliminar."
-    );
-    return;
-}
+        int respuesta = javax.swing.JOptionPane.showConfirmDialog(
+                this,
+                "¿Está seguro de eliminar la especialidad con ID " + id + "?",
+                "Confirmar eliminación",
+                javax.swing.JOptionPane.YES_NO_OPTION);
+        if (respuesta != javax.swing.JOptionPane.YES_OPTION) {
+            return;
+        }
 
-try {
-    int numeroId = Integer.parseInt(id);
-
-    if (numeroId <= 0) {
-        javax.swing.JOptionPane.showMessageDialog(
-            this, "El ID debe ser un número positivo."
-        );
-        return;
-    }
-
-    int respuesta = javax.swing.JOptionPane.showConfirmDialog(
-        this,
-        "¿Está seguro de eliminar la especialidad con ID " + numeroId + "?",
-        "Confirmar eliminación",
-        javax.swing.JOptionPane.YES_NO_OPTION
-    );
-
-    if (respuesta == javax.swing.JOptionPane.YES_OPTION) {
-        javax.swing.JOptionPane.showMessageDialog(
-            this, "La eliminación estará disponible al conectar MySQL."
-        );
-    }
-
-} catch (NumberFormatException e) {
-    javax.swing.JOptionPane.showMessageDialog(
-        this, "El ID debe contener solo números."
-    );
-}
+        try {
+            if (dao.eliminar(id)) {
+                mensaje("Especialidad eliminada correctamente.",
+                        javax.swing.JOptionPane.INFORMATION_MESSAGE);
+                limpiar();
+            } else {
+                mensaje("No existe una especialidad con ese ID.",
+                        javax.swing.JOptionPane.INFORMATION_MESSAGE);
+            }
+        } catch (java.sql.SQLIntegrityConstraintViolationException e) {
+            mensaje("No se puede eliminar: hay profesionales asociados a esta especialidad.",
+                    javax.swing.JOptionPane.ERROR_MESSAGE);
+        } catch (java.sql.SQLException e) {
+            mensaje("Error al eliminar la especialidad: " + e.getMessage(),
+                    javax.swing.JOptionPane.ERROR_MESSAGE);
+        }
     }//GEN-LAST:event_btnEliminarActionPerformed
 
     private void txtNombreActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_txtNombreActionPerformed
         // TODO add your handling code here:
     }//GEN-LAST:event_txtNombreActionPerformed
+
+    private Integer leerId() {
+        String texto = txtId.getText().trim();
+        if (texto.isEmpty()) {
+            mensaje("Ingrese el ID de la especialidad.", javax.swing.JOptionPane.WARNING_MESSAGE);
+            return null;
+        }
+        try {
+            int id = Integer.parseInt(texto);
+            if (id <= 0) {
+                mensaje("El ID debe ser un número positivo.", javax.swing.JOptionPane.WARNING_MESSAGE);
+                return null;
+            }
+            return id;
+        } catch (NumberFormatException e) {
+            mensaje("El ID debe contener solo números.", javax.swing.JOptionPane.WARNING_MESSAGE);
+            return null;
+        }
+    }
+
+    private boolean validarNombre(String nombre) {
+        if (nombre.isEmpty()) {
+            mensaje("Ingrese el nombre de la especialidad.", javax.swing.JOptionPane.WARNING_MESSAGE);
+            return false;
+        }
+        if (nombre.length() > 100) {
+            mensaje("El nombre no puede superar los 100 caracteres.", javax.swing.JOptionPane.WARNING_MESSAGE);
+            return false;
+        }
+        return true;
+    }
+
+    private String descripcion() {
+        String valor = txtDescripcionareadetexto.getText().trim();
+        return valor.isEmpty() ? null : valor;
+    }
+
+    private void limpiar() {
+        txtId.setText("");
+        txtNombre.setText("");
+        txtDescripcionareadetexto.setText("");
+        txtId.requestFocus();
+    }
+
+    private void mensaje(String texto, int tipo) {
+        javax.swing.JOptionPane.showMessageDialog(this, texto, "Especialidades", tipo);
+    }
 
     /**
      * @param args the command line arguments

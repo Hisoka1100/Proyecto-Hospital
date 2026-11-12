@@ -18,7 +18,6 @@ public class FrmProfesional extends javax.swing.JFrame {
      */
     public FrmProfesional() {
         initComponents();
-        jButton5.addActionListener(this::btnRegistrarActionPerformed);
         jButton2.addActionListener(this::btnLimpiarActionPerformed);
         jButton1.addActionListener(this::btnEditarActionPerformed);
         jButton4.addActionListener(this::btnEliminarActionPerformed);
@@ -31,7 +30,7 @@ public class FrmProfesional extends javax.swing.JFrame {
      */
     @SuppressWarnings("unchecked")
     // <editor-fold defaultstate="collapsed" desc="Generated
-    // Code">//GEN-BEGIN:initComponents
+    // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
         jLabel1 = new javax.swing.JLabel();
@@ -46,8 +45,10 @@ public class FrmProfesional extends javax.swing.JFrame {
         jButton2 = new javax.swing.JButton();
         jButton3 = new javax.swing.JButton();
         jButton4 = new javax.swing.JButton();
-        jButton5 = new javax.swing.JButton();
+        btnRegistrarActionPerfomed = new javax.swing.JButton();
         jLabel5 = new javax.swing.JLabel();
+        Rut = new javax.swing.JLabel();
+        txtRut = new javax.swing.JTextField();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
 
@@ -63,11 +64,9 @@ public class FrmProfesional extends javax.swing.JFrame {
 
         jTextField8.addActionListener(this::jTextField8ActionPerformed);
 
-        jComboBox1.setModel(new javax.swing.DefaultComboBoxModel<>(
-                new String[] { ".", "Medicina General", "Pediatría", "Cardiología", "Traumatología", "Salud mental" }));
+        jComboBox1.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { ".", "Medicina General", "Pediatría", "Cardiología", "Traumatología", "Salud mental" }));
 
-        jComboBox2.setModel(
-                new javax.swing.DefaultComboBoxModel<>(new String[] { ".", "Médico general", "Médico especialidad" }));
+        jComboBox2.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { ".", "Médico general", "Médico especialidad" }));
 
         jButton1.setText("Editar");
 
@@ -78,7 +77,8 @@ public class FrmProfesional extends javax.swing.JFrame {
 
         jButton4.setText("Eliminar");
 
-        jButton5.setText("Registrar");
+        btnRegistrarActionPerfomed.setText("Registrar");
+        btnRegistrarActionPerfomed.addActionListener(this::btnRegistrarActionPerfomedActionPerformed);
 
         jLabel5.setBackground(new java.awt.Color(0, 96, 145));
         jLabel5.setFont(new java.awt.Font("Helvetica Neue", 0, 36)); // NOI18N
@@ -86,115 +86,115 @@ public class FrmProfesional extends javax.swing.JFrame {
         jLabel5.setText("    Registro de profesionales de salud");
         jLabel5.setOpaque(true);
 
+        Rut.setText("Rut");
+
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
         layout.setHorizontalGroup(
-                layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                        .addGroup(layout.createSequentialGroup()
-                                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
-                                        .addGroup(layout.createSequentialGroup()
-                                                .addContainerGap()
-                                                .addGroup(layout
-                                                        .createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                                                        .addGroup(layout.createSequentialGroup()
-                                                                .addGroup(layout.createParallelGroup(
-                                                                        javax.swing.GroupLayout.Alignment.LEADING)
-                                                                        .addComponent(jLabel3)
-                                                                        .addComponent(jLabel1))
-                                                                .addPreferredGap(
-                                                                        javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                                                                .addGroup(layout.createParallelGroup(
-                                                                        javax.swing.GroupLayout.Alignment.LEADING)
-                                                                        .addComponent(jTextField7,
-                                                                                javax.swing.GroupLayout.PREFERRED_SIZE,
-                                                                                157,
-                                                                                javax.swing.GroupLayout.PREFERRED_SIZE)
-                                                                        .addComponent(jComboBox1,
-                                                                                javax.swing.GroupLayout.PREFERRED_SIZE,
-                                                                                157,
-                                                                                javax.swing.GroupLayout.PREFERRED_SIZE))
-                                                                .addGap(78, 78, 78)
-                                                                .addGroup(layout.createParallelGroup(
-                                                                        javax.swing.GroupLayout.Alignment.LEADING)
-                                                                        .addComponent(jLabel2)
-                                                                        .addComponent(jLabel4))
-                                                                .addGap(30, 30, 30)
-                                                                .addGroup(layout.createParallelGroup(
-                                                                        javax.swing.GroupLayout.Alignment.LEADING,
-                                                                        false)
-                                                                        .addComponent(jComboBox2, 0,
-                                                                                javax.swing.GroupLayout.DEFAULT_SIZE,
-                                                                                Short.MAX_VALUE)
-                                                                        .addComponent(jTextField8)))
-                                                        .addGroup(layout.createSequentialGroup()
-                                                                .addComponent(jButton5,
-                                                                        javax.swing.GroupLayout.PREFERRED_SIZE, 91,
-                                                                        javax.swing.GroupLayout.PREFERRED_SIZE)
-                                                                .addGap(18, 18, 18)
-                                                                .addComponent(jButton2,
-                                                                        javax.swing.GroupLayout.PREFERRED_SIZE, 91,
-                                                                        javax.swing.GroupLayout.PREFERRED_SIZE)
-                                                                .addGap(18, 18, 18)
-                                                                .addComponent(jButton3,
-                                                                        javax.swing.GroupLayout.PREFERRED_SIZE, 91,
-                                                                        javax.swing.GroupLayout.PREFERRED_SIZE)
-                                                                .addGap(18, 18, 18)
-                                                                .addComponent(jButton1,
-                                                                        javax.swing.GroupLayout.PREFERRED_SIZE, 91,
-                                                                        javax.swing.GroupLayout.PREFERRED_SIZE)
-                                                                .addGap(18, 18, 18)
-                                                                .addComponent(jButton4,
-                                                                        javax.swing.GroupLayout.PREFERRED_SIZE, 91,
-                                                                        javax.swing.GroupLayout.PREFERRED_SIZE)))
-                                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED,
-                                                        javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-                                        .addComponent(jLabel5, javax.swing.GroupLayout.PREFERRED_SIZE, 626,
-                                                javax.swing.GroupLayout.PREFERRED_SIZE))
-                                .addGap(0, 0, Short.MAX_VALUE)));
+            layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
+                .addGap(0, 5, Short.MAX_VALUE)
+                .addComponent(jLabel5, javax.swing.GroupLayout.PREFERRED_SIZE, 626, javax.swing.GroupLayout.PREFERRED_SIZE))
+            .addGroup(layout.createSequentialGroup()
+                .addContainerGap()
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
+                        .addComponent(jLabel1)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                        .addComponent(btnRegistrarActionPerfomed, javax.swing.GroupLayout.PREFERRED_SIZE, 91, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addGap(18, 18, 18)
+                        .addComponent(jButton2, javax.swing.GroupLayout.PREFERRED_SIZE, 91, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addGap(18, 18, 18)
+                        .addComponent(jButton3, javax.swing.GroupLayout.PREFERRED_SIZE, 91, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addGap(18, 18, 18)
+                        .addComponent(jButton1, javax.swing.GroupLayout.PREFERRED_SIZE, 91, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addGap(18, 18, 18)
+                        .addComponent(jButton4, javax.swing.GroupLayout.PREFERRED_SIZE, 91, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addGap(31, 31, 31))
+                    .addGroup(layout.createSequentialGroup()
+                        .addComponent(Rut)
+                        .addGap(65, 65, 65)
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                            .addComponent(txtRut)
+                            .addComponent(jTextField7, javax.swing.GroupLayout.DEFAULT_SIZE, 157, Short.MAX_VALUE))
+                        .addGap(104, 104, 104)
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addGroup(layout.createSequentialGroup()
+                                .addComponent(jLabel2)
+                                .addGap(18, 18, 18)
+                                .addComponent(jTextField8, javax.swing.GroupLayout.PREFERRED_SIZE, 157, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addGap(0, 0, Short.MAX_VALUE))
+                            .addGroup(layout.createSequentialGroup()
+                                .addComponent(jLabel4)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                                .addComponent(jComboBox2, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))))
+                    .addGroup(layout.createSequentialGroup()
+                        .addComponent(jLabel3)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                        .addComponent(jComboBox1, javax.swing.GroupLayout.PREFERRED_SIZE, 157, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addGap(0, 0, Short.MAX_VALUE))))
+        );
         layout.setVerticalGroup(
-                layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                        .addGroup(layout.createSequentialGroup()
-                                .addComponent(jLabel5, javax.swing.GroupLayout.PREFERRED_SIZE, 60,
-                                        javax.swing.GroupLayout.PREFERRED_SIZE)
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED,
-                                        javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                                        .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout
-                                                .createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                                                .addComponent(jTextField7, javax.swing.GroupLayout.PREFERRED_SIZE,
-                                                        javax.swing.GroupLayout.DEFAULT_SIZE,
-                                                        javax.swing.GroupLayout.PREFERRED_SIZE)
-                                                .addComponent(jLabel2)
-                                                .addComponent(jTextField8, javax.swing.GroupLayout.PREFERRED_SIZE,
-                                                        javax.swing.GroupLayout.DEFAULT_SIZE,
-                                                        javax.swing.GroupLayout.PREFERRED_SIZE))
-                                        .addComponent(jLabel1, javax.swing.GroupLayout.Alignment.TRAILING))
-                                .addGap(18, 18, 18)
-                                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                                        .addComponent(jComboBox1, javax.swing.GroupLayout.PREFERRED_SIZE,
-                                                javax.swing.GroupLayout.DEFAULT_SIZE,
-                                                javax.swing.GroupLayout.PREFERRED_SIZE)
-                                        .addComponent(jLabel3)
-                                        .addComponent(jLabel4)
-                                        .addComponent(jComboBox2, javax.swing.GroupLayout.PREFERRED_SIZE,
-                                                javax.swing.GroupLayout.DEFAULT_SIZE,
-                                                javax.swing.GroupLayout.PREFERRED_SIZE))
-                                .addGap(18, 18, 18)
-                                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                                        .addComponent(jButton5, javax.swing.GroupLayout.PREFERRED_SIZE, 36,
-                                                javax.swing.GroupLayout.PREFERRED_SIZE)
-                                        .addComponent(jButton2, javax.swing.GroupLayout.PREFERRED_SIZE, 36,
-                                                javax.swing.GroupLayout.PREFERRED_SIZE)
-                                        .addComponent(jButton3, javax.swing.GroupLayout.PREFERRED_SIZE, 36,
-                                                javax.swing.GroupLayout.PREFERRED_SIZE)
-                                        .addComponent(jButton1, javax.swing.GroupLayout.PREFERRED_SIZE, 36,
-                                                javax.swing.GroupLayout.PREFERRED_SIZE)
-                                        .addComponent(jButton4, javax.swing.GroupLayout.PREFERRED_SIZE, 36,
-                                                javax.swing.GroupLayout.PREFERRED_SIZE))
-                                .addGap(42, 42, 42)));
+            layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(layout.createSequentialGroup()
+                .addComponent(jLabel5, javax.swing.GroupLayout.PREFERRED_SIZE, 60, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(jLabel1)
+                    .addComponent(jTextField7, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(jLabel2)
+                    .addComponent(jTextField8, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addGap(17, 17, 17)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(jLabel4)
+                    .addComponent(jComboBox2, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(Rut)
+                    .addComponent(txtRut, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(jComboBox1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(jLabel3))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 39, Short.MAX_VALUE)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(btnRegistrarActionPerfomed, javax.swing.GroupLayout.PREFERRED_SIZE, 36, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(jButton2, javax.swing.GroupLayout.PREFERRED_SIZE, 36, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(jButton3, javax.swing.GroupLayout.PREFERRED_SIZE, 36, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(jButton1, javax.swing.GroupLayout.PREFERRED_SIZE, 36, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(jButton4, javax.swing.GroupLayout.PREFERRED_SIZE, 36, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addGap(42, 42, 42))
+        );
 
         pack();
     }// </editor-fold>//GEN-END:initComponents
+
+    private void btnRegistrarActionPerfomedActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnRegistrarActionPerfomedActionPerformed
+        // TODO add your handling code here:
+
+    Integer id = leerId();
+
+    if (id == null || !camposCompletos()) {
+        return;
+    }
+
+    try {
+        new ProfesionalDAO().registrar(
+                id,
+                txtRut.getText().trim(),
+                jTextField8.getText().trim(),
+                jComboBox2.getSelectedItem().toString(),
+                jComboBox1.getSelectedItem().toString()
+        );
+
+        mensaje("Profesional registrado correctamente.");
+        limpiar();
+
+
+    } catch (java.sql.SQLException e) {
+        mensaje("Error al registrar profesional: " + e.getMessage());
+    }
+
+
+    }//GEN-LAST:event_btnRegistrarActionPerfomedActionPerformed
 
     private void jTextField7ActionPerformed(java.awt.event.ActionEvent evt) {// GEN-FIRST:event_jTextField7ActionPerformed
         // TODO add your handling code here:
@@ -216,9 +216,10 @@ public class FrmProfesional extends javax.swing.JFrame {
                 mensaje("No existe un profesional con ese ID.");
                 return;
             }
-            jTextField8.setText(datos[1]);
-            jComboBox2.setSelectedItem(datos[2]);
-            jComboBox1.setSelectedItem(datos[3]);
+            txtRut.setText(datos[1]);
+            jTextField8.setText(datos[2]);
+            jComboBox2.setSelectedItem(datos[3]);
+            jComboBox1.setSelectedItem(datos[4]);
 
         } catch (java.sql.SQLException e) {
             mensaje("Error al buscar: " + e.getMessage());
@@ -229,10 +230,37 @@ public class FrmProfesional extends javax.swing.JFrame {
 
     private void limpiar() {
         jTextField7.setText("");
+        txtRut.setText("");
         jTextField8.setText("");
         jComboBox1.setSelectedIndex(0);
         jComboBox2.setSelectedIndex(0);
         jTextField7.requestFocus();
+    }
+
+    private void btnLimpiarActionPerformed(java.awt.event.ActionEvent evt) {
+        limpiar();
+    }
+
+    private void btnEditarActionPerformed(java.awt.event.ActionEvent evt) {
+        Integer id = leerId();
+        if (id == null || !camposCompletos()) {
+            return;
+        }
+
+        try {
+            boolean actualizado = new ProfesionalDAO().editar(
+                    id,
+                    txtRut.getText().trim(),
+                    jTextField8.getText().trim(),
+                    jComboBox2.getSelectedItem().toString(),
+                    jComboBox1.getSelectedItem().toString()
+            );
+            mensaje(actualizado
+                    ? "Profesional actualizado correctamente."
+                    : "No existe un profesional con ese ID.");
+        } catch (java.sql.SQLException e) {
+            mensaje("Error al editar profesional: " + e.getMessage());
+        }
     }
 
     private void mensaje(String texto) {
@@ -260,57 +288,14 @@ public class FrmProfesional extends javax.swing.JFrame {
     }
 
     private boolean camposCompletos() {
-        if (jTextField8.getText().trim().isEmpty()
+        if (txtRut.getText().trim().isEmpty()
+                || jTextField8.getText().trim().isEmpty()
                 || jComboBox1.getSelectedIndex() <= 0
                 || jComboBox2.getSelectedIndex() <= 0) {
-            mensaje("Complete todos los campos.");
+            mensaje("Complete el RUT, nombre, especialidad y tipo profesional.");
             return false;
         }
         return true;
-    }
-
-    private void btnRegistrarActionPerformed(java.awt.event.ActionEvent evt) {
-        Integer id = leerId();
-        if (id == null || !camposCompletos())
-            return;
-
-        try {
-            new ProfesionalDAO().registrar(id,
-                    jTextField8.getText().trim(),
-                    jComboBox2.getSelectedItem().toString(),
-                    jComboBox1.getSelectedItem().toString());
-
-            mensaje("Profesional registrado correctamente.");
-            limpiar();
-
-        } catch (java.sql.SQLIntegrityConstraintViolationException e) {
-            mensaje("No se pudo registrar. El ID ya existe o falta un dato obligatorio.\n"
-                    + e.getMessage());
-        } catch (java.sql.SQLException e) {
-            mensaje("Error al guardar: " + e.getMessage());
-        }
-    }
-
-    private void btnLimpiarActionPerformed(java.awt.event.ActionEvent evt) {
-        limpiar();
-    }
-
-    private void btnEditarActionPerformed(java.awt.event.ActionEvent evt) {
-        Integer id = leerId();
-        if (id == null || !camposCompletos())
-            return;
-
-        try {
-            boolean ok = new ProfesionalDAO().editar(id,
-                    jTextField8.getText().trim(),
-                    jComboBox2.getSelectedItem().toString(),
-                    jComboBox1.getSelectedItem().toString());
-
-            mensaje(ok ? "Profesional actualizado." : "No existe un profesional con ese ID.");
-
-        } catch (java.sql.SQLException e) {
-            mensaje("Error al editar: " + e.getMessage());
-        }
     }
 
     private void btnEliminarActionPerformed(java.awt.event.ActionEvent evt) {
@@ -369,11 +354,12 @@ public class FrmProfesional extends javax.swing.JFrame {
     }
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JLabel Rut;
+    private javax.swing.JButton btnRegistrarActionPerfomed;
     private javax.swing.JButton jButton1;
     private javax.swing.JButton jButton2;
     private javax.swing.JButton jButton3;
     private javax.swing.JButton jButton4;
-    private javax.swing.JButton jButton5;
     private javax.swing.JComboBox<String> jComboBox1;
     private javax.swing.JComboBox<String> jComboBox2;
     private javax.swing.JLabel jLabel1;
@@ -383,5 +369,6 @@ public class FrmProfesional extends javax.swing.JFrame {
     private javax.swing.JLabel jLabel5;
     private javax.swing.JTextField jTextField7;
     private javax.swing.JTextField jTextField8;
+    private javax.swing.JTextField txtRut;
     // End of variables declaration//GEN-END:variables
 }

@@ -22,29 +22,32 @@ public class ProfesionalDAO {
                 + "' no existe en la base de datos.");
     }
 
-    public void registrar(int id, String nombre, String tipo, String especialidad)
-            throws SQLException {
+    public void registrar(int id, String rut, String nombre, String tipo,
+                          String especialidad) throws SQLException {
 
         String sql = "INSERT INTO profesional "
-                + "(id_profesional, nombre, tipo_profesional, id_especialidad) "
-                + "VALUES (?, ?, ?, ?)";
+                + "(id_profesional, rut, nombre, tipo_profesional, id_especialidad) "
+                + "VALUES (?, ?, ?, ?, ?)";
 
         try (Connection con = ConexionBD.conectar()) {
             int idEsp = idEspecialidad(con, especialidad);
+
             try (PreparedStatement ps = con.prepareStatement(sql)) {
                 ps.setInt(1, id);
-                ps.setString(2, nombre);
-                ps.setString(3, tipo);
-                ps.setInt(4, idEsp);
+                ps.setString(2, rut);
+                ps.setString(3, nombre);
+                ps.setString(4, tipo);
+                ps.setInt(5, idEsp);
+
                 ps.executeUpdate();
             }
         }
     }
 
-    // Retorna {id, nombre, tipo, especialidad} o null si no existe
+    // Retorna {id, rut, nombre, tipo, especialidad} o null si no existe
     public String[] buscar(int id) throws SQLException {
 
-        String sql = "SELECT p.id_profesional, p.nombre, p.tipo_profesional, "
+        String sql = "SELECT p.id_profesional, p.rut, p.nombre, p.tipo_profesional, "
                 + "e.nombre AS especialidad "
                 + "FROM profesional p "
                 + "JOIN especialidad e ON p.id_especialidad = e.id_especialidad "
@@ -58,6 +61,7 @@ public class ProfesionalDAO {
                 if (rs.next()) {
                     return new String[] {
                             String.valueOf(rs.getInt("id_profesional")),
+                            rs.getString("rut"),
                             rs.getString("nombre"),
                             rs.getString("tipo_profesional"),
                             rs.getString("especialidad")
@@ -68,19 +72,21 @@ public class ProfesionalDAO {
         return null;
     }
 
-    public boolean editar(int id, String nombre, String tipo, String especialidad)
-            throws SQLException {
+    public boolean editar(int id, String rut, String nombre, String tipo,
+                          String especialidad) throws SQLException {
 
-        String sql = "UPDATE profesional SET nombre = ?, tipo_profesional = ?, "
-                + "id_especialidad = ? WHERE id_profesional = ?";
+        String sql = "UPDATE profesional SET rut = ?, nombre = ?, "
+                + "tipo_profesional = ?, id_especialidad = ? "
+                + "WHERE id_profesional = ?";
 
         try (Connection con = ConexionBD.conectar()) {
             int idEsp = idEspecialidad(con, especialidad);
             try (PreparedStatement ps = con.prepareStatement(sql)) {
-                ps.setString(1, nombre);
-                ps.setString(2, tipo);
-                ps.setInt(3, idEsp);
-                ps.setInt(4, id);
+                ps.setString(1, rut);
+                ps.setString(2, nombre);
+                ps.setString(3, tipo);
+                ps.setInt(4, idEsp);
+                ps.setInt(5, id);
                 return ps.executeUpdate() > 0;
             }
         }

@@ -125,7 +125,8 @@ public class FrmConsulta extends javax.swing.JFrame {
         btnEliminar.setText("Eliminar");
         btnEliminar.addActionListener(this::btnEliminarActionPerformed);
 
-        cmbProfesional.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "Item 1", "Item 2", "Item 3", "Item 4" }));
+        cmbProfesional.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "Felipe Baeza", "Diego Salazar", "Macarena Lagos", "Bastian Arriagada" }));
+        cmbProfesional.addActionListener(this::cmbProfesionalActionPerformed);
 
         cmbPaciente.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "Item 1", "Item 2", "Item 3", "Item 4" }));
 
@@ -491,6 +492,10 @@ public class FrmConsulta extends javax.swing.JFrame {
                     "Error", JOptionPane.ERROR_MESSAGE);
         }
     }//GEN-LAST:event_btnEliminarActionPerformed
+
+    private void cmbProfesionalActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_cmbProfesionalActionPerformed
+        // TODO add your handling code here:
+    }//GEN-LAST:event_cmbProfesionalActionPerformed
 
     /**
      * @param args the command line arguments
