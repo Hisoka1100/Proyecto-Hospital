@@ -10,6 +10,9 @@ package Hospital;
  */
 public class FrmDiagnostico extends javax.swing.JFrame {
     
+    // Objeto encargado de las operaciones con MySQL
+private final DiagnosticoDAO diagnosticoDAO = new DiagnosticoDAO();
+    
     private static final java.util.logging.Logger logger = java.util.logging.Logger.getLogger(FrmDiagnostico.class.getName());
 
     /**
@@ -150,45 +153,75 @@ public class FrmDiagnostico extends javax.swing.JFrame {
     }//GEN-LAST:event_txtRecomendacionesActionPerformed
 
     private void btnRegistrarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnRegistrarActionPerformed
-        // TODO add your handling code here:
-        String id = txtId.getText().trim();
-String idConsulta = txtIdConsulta.getText().trim();
-String descripcion = txtDescripcion.getText().trim();
-String recomendaciones = txtRecomendaciones.getText().trim();
+        
+    String id = txtId.getText().trim();
+    String idConsulta = txtConsulta.getText().trim();
+    String descripcion = txtDescripcion.getText().trim();
+    String recomendaciones = txtRecomendaciones.getText().trim();
 
-// Comprobar que todos los campos estén completos
-if (id.isEmpty() || idConsulta.isEmpty()
-        || descripcion.isEmpty() || recomendaciones.isEmpty()) {
+    // Validar campos obligatorios
+    if (id.isEmpty() || idConsulta.isEmpty()
+            || descripcion.isEmpty()) {
 
-    javax.swing.JOptionPane.showMessageDialog(
-        this, "Complete todos los campos antes de registrar."
-    );
-    return;
-}
-
-// Validar que ambos ID sean números positivos
-try {
-    int numeroId = Integer.parseInt(id);
-    int numeroIdConsulta = Integer.parseInt(idConsulta);
-
-    if (numeroId <= 0 || numeroIdConsulta <= 0) {
         javax.swing.JOptionPane.showMessageDialog(
-            this, "Los ID deben ser números positivos."
+                this, "Complete los campos obligatorios."
         );
         return;
     }
 
-} catch (NumberFormatException e) {
-    javax.swing.JOptionPane.showMessageDialog(
-        this, "Los ID deben contener solo números."
-    );
-    return;
-}
+    try {
+        int numeroId = Integer.parseInt(id);
+        int numeroConsulta = Integer.parseInt(idConsulta);
 
-// Confirmar que los datos pasaron las validaciones
-javax.swing.JOptionPane.showMessageDialog(
-    this, "Validación correcta. Diagnóstico listo para registrar."
-);
+        if (numeroId <= 0 || numeroConsulta <= 0) {
+            javax.swing.JOptionPane.showMessageDialog(
+                    this, "Los ID deben ser números positivos."
+            );
+            return;
+        }
+
+        // Comprobar que exista la consulta
+        boolean consultaExiste = diagnosticoDAO.existeConsulta(numeroConsulta);
+        if (!consultaExiste) {
+            javax.swing.JOptionPane.showMessageDialog(
+                    this, "La consulta ingresada no existe."
+            );
+            return;
+        }
+
+        // Mostrar éxito solo cuando el DAO confirme una fila insertada.
+        boolean registrado = diagnosticoDAO.registrar(
+                numeroId,
+                numeroConsulta,
+                descripcion,
+                recomendaciones
+        );
+
+        if (registrado) {
+            javax.swing.JOptionPane.showMessageDialog(
+                    this, "Diagnóstico registrado correctamente en hospital_db."
+            );
+            btnLimpiarActionPerformed(evt);
+        } else {
+            javax.swing.JOptionPane.showMessageDialog(
+                    this, "No se confirmó la inserción del diagnóstico.",
+                    "Error", javax.swing.JOptionPane.ERROR_MESSAGE
+            );
+        }
+
+    } catch (NumberFormatException e) {
+        javax.swing.JOptionPane.showMessageDialog(
+                this, "Los ID deben contener solamente números."
+        );
+
+    } catch (java.sql.SQLException e) {
+        javax.swing.JOptionPane.showMessageDialog(
+                this, "Error al registrar: " + e.getMessage()
+        );
+    }
+
+
+     
     }//GEN-LAST:event_btnRegistrarActionPerformed
 
     private void btnLimpiarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnLimpiarActionPerformed
@@ -201,108 +234,183 @@ javax.swing.JOptionPane.showMessageDialog(
     }//GEN-LAST:event_btnLimpiarActionPerformed
 
     private void btnBuscarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnBuscarActionPerformed
-        // TODO add your handling code here:
-        String id = txtId.getText().trim();
+        // TODO add your handling code here:      
+    String id = txtId.getText().trim();
 
-if (id.isEmpty()) {
-    javax.swing.JOptionPane.showMessageDialog(
-        this, "Ingrese el ID del diagnóstico que desea buscar."
-    );
-    return;
-}
-
-try {
-    int numeroId = Integer.parseInt(id);
-
-    if (numeroId <= 0) {
+    if (id.isEmpty()) {
         javax.swing.JOptionPane.showMessageDialog(
-            this, "El ID debe ser un número positivo."
+                this, "Ingrese el ID del diagnóstico."
         );
         return;
     }
 
-    javax.swing.JOptionPane.showMessageDialog(
-        this, "ID válido. La búsqueda estará disponible al conectar MySQL."
-    );
+    try {
+        int numeroId = Integer.parseInt(id);
 
-} catch (NumberFormatException e) {
-    javax.swing.JOptionPane.showMessageDialog(
-        this, "El ID debe contener solo números."
-    );
-}
+        if (numeroId <= 0) {
+            javax.swing.JOptionPane.showMessageDialog(
+                    this, "El ID debe ser positivo."
+            );
+            return;
+        }
+
+        String[] diagnostico = diagnosticoDAO.buscar(numeroId);
+
+        if (diagnostico == null) {
+            javax.swing.JOptionPane.showMessageDialog(
+                    this, "No se encontró el diagnóstico."
+            );
+            return;
+        }
+
+        txtConsulta.setText(diagnostico[1]);
+        txtDescripcion.setText(diagnostico[2]);
+        txtRecomendaciones.setText(diagnostico[3] == null
+                ? "" : diagnostico[3]);
+
+        javax.swing.JOptionPane.showMessageDialog(
+                this, "Diagnóstico encontrado."
+        );
+
+    } catch (NumberFormatException e) {
+        javax.swing.JOptionPane.showMessageDialog(
+                this, "Ingrese un ID numérico válido."
+        );
+
+    } catch (java.sql.SQLException e) {
+        javax.swing.JOptionPane.showMessageDialog(
+                this, "Error al buscar: " + e.getMessage()
+        );
+    }
+
+
+        
+  
     }//GEN-LAST:event_btnBuscarActionPerformed
 
     private void btnEditarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnEditarActionPerformed
         // TODO add your handling code here:
-        String id = txtId.getText().trim();
+    String id = txtId.getText().trim();
+    String idConsulta = txtConsulta.getText().trim();
+    String descripcion = txtDescripcion.getText().trim();
+    String recomendaciones = txtRecomendaciones.getText().trim();
 
-if (id.isEmpty()) {
-    javax.swing.JOptionPane.showMessageDialog(
-        this, "Ingrese el ID del diagnóstico que desea editar."
-    );
-    return;
-}
+    if (id.isEmpty() || idConsulta.isEmpty()
+            || descripcion.isEmpty()) {
 
-try {
-    int numeroId = Integer.parseInt(id);
-
-    if (numeroId <= 0) {
         javax.swing.JOptionPane.showMessageDialog(
-            this, "El ID debe ser un número positivo."
+                this, "Complete los campos obligatorios."
         );
         return;
     }
 
-    javax.swing.JOptionPane.showMessageDialog(
-        this, "ID válido. La edición estará disponible al conectar MySQL."
-    );
+    try {
+        int numeroId = Integer.parseInt(id);
+        int numeroConsulta = Integer.parseInt(idConsulta);
 
-} catch (NumberFormatException e) {
-    javax.swing.JOptionPane.showMessageDialog(
-        this, "El ID debe contener solo números."
-    );
-}
+        if (numeroId <= 0 || numeroConsulta <= 0) {
+            javax.swing.JOptionPane.showMessageDialog(
+                    this, "Los ID deben ser positivos."
+            );
+            return;
+        }
+
+        if (!diagnosticoDAO.existeConsulta(numeroConsulta)) {
+            javax.swing.JOptionPane.showMessageDialog(
+                    this, "La consulta ingresada no existe."
+            );
+            return;
+        }
+
+        boolean actualizado = diagnosticoDAO.editar(
+                numeroId,
+                numeroConsulta,
+                descripcion,
+                recomendaciones
+        );
+
+        if (actualizado) {
+            javax.swing.JOptionPane.showMessageDialog(
+                    this, "Diagnóstico actualizado correctamente."
+            );
+        } else {
+            javax.swing.JOptionPane.showMessageDialog(
+                    this, "No se encontró el diagnóstico."
+            );
+        }
+
+    } catch (NumberFormatException e) {
+        javax.swing.JOptionPane.showMessageDialog(
+                this, "Los ID deben ser números."
+        );
+
+    } catch (java.sql.SQLException e) {
+        javax.swing.JOptionPane.showMessageDialog(
+                this, "Error al editar: " + e.getMessage()
+        );
+    }
+
+ 
     }//GEN-LAST:event_btnEditarActionPerformed
 
     private void btnEliminarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnEliminarActionPerformed
         // TODO add your handling code here:
-        String id = txtId.getText().trim();
+    String id = txtId.getText().trim();
 
-if (id.isEmpty()) {
-    javax.swing.JOptionPane.showMessageDialog(
-        this, "Ingrese el ID del diagnóstico que desea eliminar."
-    );
-    return;
-}
-
-try {
-    int numeroId = Integer.parseInt(id);
-
-    if (numeroId <= 0) {
+    if (id.isEmpty()) {
         javax.swing.JOptionPane.showMessageDialog(
-            this, "El ID debe ser un número positivo."
+                this, "Ingrese el ID del diagnóstico."
         );
         return;
     }
 
-    int respuesta = javax.swing.JOptionPane.showConfirmDialog(
-        this,
-        "¿Está seguro de eliminar el diagnóstico con ID " + numeroId + "?",
-        "Confirmar eliminación",
-        javax.swing.JOptionPane.YES_NO_OPTION
-    );
+    try {
+        int numeroId = Integer.parseInt(id);
 
-    if (respuesta == javax.swing.JOptionPane.YES_OPTION) {
+        if (numeroId <= 0) {
+            javax.swing.JOptionPane.showMessageDialog(
+                    this, "El ID debe ser positivo."
+            );
+            return;
+        }
+
+        int respuesta = javax.swing.JOptionPane.showConfirmDialog(
+                this,
+                "¿Está seguro de eliminar este diagnóstico?",
+                "Confirmar eliminación",
+                javax.swing.JOptionPane.YES_NO_OPTION
+        );
+
+        if (respuesta == javax.swing.JOptionPane.YES_OPTION) {
+
+            boolean eliminado = diagnosticoDAO.eliminar(numeroId);
+
+            if (eliminado) {
+                javax.swing.JOptionPane.showMessageDialog(
+                        this, "Diagnóstico eliminado correctamente."
+                );
+
+                btnLimpiarActionPerformed(evt);
+
+            } else {
+                javax.swing.JOptionPane.showMessageDialog(
+                        this, "No se encontró el diagnóstico."
+                );
+            }
+        }
+
+    } catch (NumberFormatException e) {
         javax.swing.JOptionPane.showMessageDialog(
-            this, "La eliminación estará disponible al conectar MySQL."
+                this, "El ID debe ser numérico."
+        );
+
+    } catch (java.sql.SQLException e) {
+        javax.swing.JOptionPane.showMessageDialog(
+                this, "Error al eliminar: " + e.getMessage()
         );
     }
 
-} catch (NumberFormatException e) {
-    javax.swing.JOptionPane.showMessageDialog(
-        this, "El ID debe contener solo números."
-    );
-}
+ 
     }//GEN-LAST:event_btnEliminarActionPerformed
 
     /**
